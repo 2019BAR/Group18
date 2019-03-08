@@ -123,7 +123,8 @@ sd(ProcterGamble$StockPrice)
 __§ 2.1__ Around what year did Coca-Cola has its highest stock price in this time period? Around what year did Coca-Cola has its lowest stock price in this time period?
 ```{r}
 CocaCola$Date = as.POSIXct(CocaCola$Date, format="%m/%d/%y")
-plot(CocaCola$Date,CocaCola$StockPrice)
+plot(CocaCola$Date, CocaCola$StockPrice, type="l")
+axis(side=1, at=c(1970,2009))
 #
 #
 ```
