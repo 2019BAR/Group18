@@ -206,7 +206,7 @@ legend("topright",                                # 表示在右上角
        )
 abline(v=as.POSIXct("1997-09-01"), lwd=2)
 abline(v=as.POSIXct("1997-11-01"), lwd=2)
-#Procter an Boeing
+#Procter and Boeing
 #
 ```
 
