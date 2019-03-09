@@ -55,13 +55,13 @@ Boeing = read.csv("data/BoeingStock.csv")
 
 __§ 1.1__ Our five datasets all have the same number of observations. How many observations are there in each data set?
 ```{r}
-#
-#
 nrow(IBM)
 nrow(GE)
 nrow(ProcterGamble)
 nrow(CocaCola)
 nrow(Boeing)
+#480
+
 ```
 
 
@@ -84,35 +84,35 @@ date[480]
 __§ 1.4__ What is the mean stock price of IBM over this time period?
 ```{r}
 mean(IBM$StockPrice)
-#
+#144.375
 #
 ```
 
 __§ 1.5__ What is the minimum stock price of General Electric (GE) over this time period?
 ```{r}
 min(GE$StockPrice)
-#
+#9.293636
 #
 ```
 
 __§ 1.6__ What is the maximum stock price of Coca-Cola over this time period?
 ```{r}
 max(CocaCola$StockPrice)
-#
+#146.5843
 #
 ```
 
 __§ 1.7__ What is the median stock price of Boeing over this time period?
 ```{r}
 median(Boeing$StockPrice)
-#
+#44.8834
 #
 ```
 
 __§ 1.8__ What is the standard deviation of the stock price of Procter & Gamble over this time period?
 ```{r}
 sd(ProcterGamble$StockPrice)
-#
+#18.19414
 #
 ```
 
@@ -124,7 +124,10 @@ __§ 2.1__ Around what year did Coca-Cola has its highest stock price in this ti
 ```{r}
 CocaCola$Date = as.POSIXct(CocaCola$Date, format="%m/%d/%y")
 plot(CocaCola$Date, CocaCola$StockPrice, type="l")
-axis(side=1, at=c(1970,2009))
+points(x=CocaCola$Date[which.min(CocaCola$StockPrice)], 
+       y=min(CocaCola$StockPrice), 
+       pch=16,               # 點的圖形
+       col="red")            # 顏色
 #
 #
 ```
@@ -132,19 +135,32 @@ axis(side=1, at=c(1970,2009))
 
 __§ 2.2__ In March of 2000, the technology bubble burst, and a stock market crash occurred. According to this plot, which company's stock dropped more?
 ```{r}
+plot(CocaCola$Date, CocaCola$StockPrice, type="l", col="red")
+ProcterGamble$Date = as.POSIXct(ProcterGamble$Date, format="%m/%d/%y")
+GE$Date = as.POSIXct(GE$Date, format="%m/%d/%y")
+Boeing$Date = as.POSIXct(Boeing$Date, format="%m/%d/%y")
+lines(ProcterGamble$Date, ProcterGamble$StockPrice, col="blue")
+lines(IBM$Date, IBM$StockPrice, col = "orange")
+lines(GE$Date, GE$StockPrice, col = "green")
+lines(Boeing$Date, Boeing$StockPrice, col = "brown")
+abline(v=as.POSIXct("2000-03-01"), lwd=1)
 #
 #
 ```
 
 __§ 2.3__ (a) Around 1983, the stock for one of these companies (Coca-Cola or Procter and Gamble) was going up, while the other was going down. Which one was going up? 
 ```{r}
-#
-#
+plot(CocaCola$Date, CocaCola$StockPrice, type="l", col="red")
+lines(ProcterGamble$Date, ProcterGamble$StockPrice, col="blue")
+abline(v=as.POSIXct("1983-01-01"), lwd=2)
+
+#Coca-Cola is going up
+#Procter and Gamble is going down
 ```
 
 (b) In the time period shown in the plot, which stock generally has lower values?
 ```{r}
-#
+#Coca-Cola has lower price
 #
 ```
 
@@ -155,25 +171,60 @@ __§ 2.3__ (a) Around 1983, the stock for one of these companies (Coca-Cola or P
 
 __§ 3.1__ Which stock fell the most right after the technology bubble burst in March 2000?
 ```{r}
-#
+plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210))
+lines(ProcterGamble$Date[301:432], ProcterGamble$StockPrice[301:432], col="blue")
+lines(IBM$Date[301:432], IBM$StockPrice[301:432], col="orange")
+lines(GE$Date[301:432], GE$StockPrice[301:432], col="brown")
+lines(Boeing$Date[301:432], Boeing$StockPrice[301:432], col="green")
+legend("topright",                                # 表示在右上角
+       pch = 1,                                   # pch代表點的圖案
+       col = c("red", "blue", "orange", "brown", "green"),  # col代表顏色 
+       legend = c("Ccca", "Procter", "IBM", "GE", "Boeing") # 顏色所對應的名稱
+       )
+abline(v=as.POSIXct("2000-03-01"), lwd=1)
+#Boeing
 #
 ```
 
 __§ 3.2__ Which stock reaches the highest value in the time period 1995-2005?
 ```{r}
-#
+#IBM
 #
 ```
 
 __§ 3.3__ In October of 1997, there was a global stock market crash that was caused by an economic crisis in Asia. Comparing September 1997 to November 1997, which companies saw a decreasing trend in their stock price? (Select all that apply.)
 ```{r}
-#
+plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210))
+lines(ProcterGamble$Date[301:432], ProcterGamble$StockPrice[301:432], col="blue")
+lines(IBM$Date[301:432], IBM$StockPrice[301:432], col="orange")
+lines(GE$Date[301:432], GE$StockPrice[301:432], col="brown")
+lines(Boeing$Date[301:432], Boeing$StockPrice[301:432], col="green")
+legend("topright",                                # 表示在右上角
+       pch = 1,                                   # pch代表點的圖案
+       col = c("red", "blue", "orange", "brown", "green"),  # col代表顏色 
+       legend = c("Ccca", "Procter", "IBM", "GE", "Boeing") # 顏色所對應的名稱
+       )
+abline(v=as.POSIXct("1997-09-01"), lwd=2)
+abline(v=as.POSIXct("1997-11-01"), lwd=2)
+#Procter an Boeing
 #
 ```
 
 __§ 3.4__ In the last two years of this time period (2004 and 2005) which stock seems to be performing the best, in terms of increasing stock price?
 ```{r}
-#
+plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210))
+lines(ProcterGamble$Date[301:432], ProcterGamble$StockPrice[301:432], col="blue")
+lines(IBM$Date[301:432], IBM$StockPrice[301:432], col="orange")
+lines(GE$Date[301:432], GE$StockPrice[301:432], col="brown")
+lines(Boeing$Date[301:432], Boeing$StockPrice[301:432], col="green")
+legend("topright",                                # 表示在右上角
+       pch = 1,                                   # pch代表點的圖案
+       col = c("red", "blue", "orange", "brown", "green"),  # col代表顏色 
+       legend = c("Ccca", "Procter", "IBM", "GE", "Boeing") # 顏色所對應的名稱
+       )
+abline(v=as.POSIXct("2004-01-01"), lwd=2)
+abline(v=as.POSIXct("2005-12-31"), lwd=2)
+#Boeing
 #
 ```
 
@@ -186,27 +237,27 @@ __§ 3.4__ In the last two years of this time period (2004 and 2005) which stock
 __§ 4.1__ For IBM, compare the monthly averages to the overall average stock price. In which months has IBM historically had a higher stock price (on average)? Select all that apply.
 ```{r}
 IBM$Date = as.POSIXct(IBM$Date, format="%m/%d/%y")
-tapply(IBM$StockPrice, format(IBM$Date,"%m"), mean)
+sort(tapply(IBM$StockPrice, months(IBM$Date), mean))
 mean(IBM$StockPrice)
-#
-#
+#January - May's average price are higher than overall average price
+
 ```
 
 __§ 4.2__ General Electric and Coca-Cola both have their highest average stock price in the same month. Which month is this?
 ```{r}
 GE$Date = as.POSIXct(GE$Date, format="%m/%d/%y")
-which.max(tapply(GE$StockPrice, format(GE$Date,"%m"), mean))
+sort(tapply(GE$StockPrice, format(GE$Date,"%m"), mean))
 CocaCola$Date = as.POSIXct(CocaCola$Date, format="%m/%d/%y")
-which.max(tapply(CocaCola$StockPrice, format(CocaCola$Date,"%m"), mean))
-#
-#
+sort(tapply(CocaCola$StockPrice, format(CocaCola$Date,"%m"), mean))
+#Coca : april
+#GE: march
 ```
 
 __§ 4.3__ For the months of December and January, every company's average stock is higher in one month and lower in the other. In which month are the stock prices lower?
 ```{r}
+tapply(IBM$StockPrice, format(IBM$Date,"%m"), mean)
+#Dec is lower
 
-#
-#
 ```
 
 <br><br><br>
