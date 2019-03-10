@@ -1,6 +1,6 @@
 ---
 title: "AS3-3: 美國的人口統計和就業資料"
-author: "第 0 組"
+author: "第 18 組"
 date: "`r Sys.time()`"
 output: 
   html_document:
@@ -132,8 +132,11 @@ __§ 2.2__  Which is the most accurate:
 + The Married variable being missing is not related to the Region, Sex, Age, or Citizenship value for the interviewee.
 
 ```{r}
-
-#
+table(cps$Region, is.na(cps$Married))
+table(cps$Sex, is.na(cps$Married))
+table(cps$Age, is.na(cps$Married))
+table(cps$Citizenship, is.na(cps$Married))
+#  3.The Married variable being missing is related to the Age value for the interviewee. 
 ```
 
 
@@ -169,7 +172,7 @@ d_metro_rate = sapply(d_state,function(x){
   sum(is.na(x$MetroAreaCode))/nrow(x)
 })
 d_metro_rate %>% sort
-#Wisconsin
+# Wisconsin
 ```
 
 Which state has the largest proportion of non-metropolitan interviewees, ignoring states where all interviewees were non-metropolitan?
@@ -202,38 +205,49 @@ length(table(cps$CountryOfBirthCode))
 
 __§ 3.2__ What is the name of the variable that was added to the data frame by the merge() operation?
 ```{r}
-#
-#
+cps = merge(cps, met, by.x="MetroAreaCode", by.y="Code", all.x=TRUE)
+# 保留cps的MetroAreaCode欄位並與met的Code欄位做對應，將代碼相同者的met資料加入cps資料中
 ```
 
 How many interviewees have a missing value for the new metropolitan area variable?
 ```{r}
-#
-#
+sum(is.na(cps$MetroArea))
+# 34238
 ```
 
 __§ 3.3__ Which of the following metropolitan areas has the largest number of interviewees?
 ```{r}
-#
-#
+table(cps$MetroAreaCode) %>% sort %>% tail(1)
+met$MetroArea[met$Code == 35620]
+# New York-Northern New Jersey-Long Island, NY-NJ-PA
 ```
 
 __§ 3.4__ Which metropolitan area has the highest proportion of interviewees of Hispanic ethnicity?
 ```{r}
-#
-#
+d_state = split(cps, as.factor(cps$State))
+d_metro_rate = sapply(d_state,function(x){
+  sum(x$Hispanic)/nrow(x)
+})
+d_metro_rate %>% sort
+# New Mexico
 ```
 
 __§ 3.5__ Determine the number of metropolitan areas in the United States from which at least 20% of interviewees are Asian.
 ```{r}
-#
-#
+d_state = split(cps, as.factor(cps$MetroAreaCode))
+d_metro_rate = sapply(d_state,function(x){
+  sum(x$Race == "Asian")/nrow(x)
+})
+d_metro_rate[d_metro_rate > 0.2] %>% sort
+
+# 4個 
 ```
 
 __§ 3.6__  Passing na.rm=TRUE to the tapply function, determine which metropolitan area has the smallest proportion of interviewees who have received no high school diploma.
 ```{r}
-#
-#
+tapply(cps$Education == "No high school diploma", cps$MetroAreaCode, mean, na.rm = T) %>% sort %>% head(1)
+met$MetroArea[met$Code == "26980"]
+# Iowa City, IA
 ```
 
 
@@ -245,44 +259,44 @@ __§ 3.6__  Passing na.rm=TRUE to the tapply function, determine which metropoli
 
 __§ 4.1__ What is the name of the variable added to the CPS data frame by this merge operation?
 ```{r}
-#
-#
+cps = merge(cps, cou, by.x="CountryOfBirthCode", by.y="Code", all.x=TRUE)
+# 保留cps的CountryOfBirthCode欄位並與cou的Code欄位做對應，將將代碼相同者的cou資料表加入cps資料中
 ```
 
 How many interviewees have a missing value for the new metropolitan area variable?
 ```{r}
-#
-#
+sum(is.na(cps$Country))
+# 176
 ```
 
 __§ 4.2__ Among all interviewees born outside of North America, which country was the most common place of birth?
 ```{r}
-#
-#
+table(cps$Country) %>% sort %>% tail(2)
+# Mexico
 ```
 
 __§ 4.3__ What proportion of the interviewees from the "New York-Northern New Jersey-Long Island, NY-NJ-PA" metropolitan area have a country of birth that is not the United States? 
 ```{r}
-#
-#
+tapply(cps$Country != "United States", cps$MetroArea == "New York-Northern New Jersey-Long Island, NY-NJ-PA", mean, na.rm = T)
+# 0.3087 
 ```
 
 __§ 4.4__ Which metropolitan area has the largest number (note -- not proportion) of interviewees with a country of birth in India? 
 ```{r}
-#
-#
+table(cps$MetroArea[cps$Country == "India"]) %>% sort %>% tail(3)
+# New York-Northern New Jersey-Long Island, NY-NJ-PA
 ```
 
 In Brazil?
 ```{r}
-#
-#
+table(cps$MetroArea[cps$Country == "Brazil"]) %>% sort %>% tail(3)
+# Boston-Cambridge-Quincy, MA-NH 
 ```
 
 In Somalia?
 ```{r}
-#
-#
+table(cps$MetroArea[cps$Country == "Somalia"]) %>% sort %>% tail(3)
+# Minneapolis-St Paul-Bloomington, MN-WI
 ```
 
 <br><br><br>

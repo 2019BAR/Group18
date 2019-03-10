@@ -1,6 +1,6 @@
 ---
 title: "AS3-2: 股市動態"
-author: "第 0 組"
+author: "第 18 組"
 date: "`r Sys.time()`"
 output:
   html_document:
