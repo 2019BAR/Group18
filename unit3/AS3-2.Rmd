@@ -194,7 +194,7 @@ __§ 3.2__ Which stock reaches the highest value in the time period 1995-2005?
 
 __§ 3.3__ In October of 1997, there was a global stock market crash that was caused by an economic crisis in Asia. Comparing September 1997 to November 1997, which companies saw a decreasing trend in their stock price? (Select all that apply.)
 ```{r}
-plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210))
+plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210),xlim = c(as.POSIXct("1997-09-01"),as.POSIXct("1997-11-01")))
 lines(ProcterGamble$Date[301:432], ProcterGamble$StockPrice[301:432], col="blue")
 lines(IBM$Date[301:432], IBM$StockPrice[301:432], col="orange")
 lines(GE$Date[301:432], GE$StockPrice[301:432], col="brown")
@@ -212,7 +212,7 @@ abline(v=as.POSIXct("1997-11-01"), lwd=2)
 
 __§ 3.4__ In the last two years of this time period (2004 and 2005) which stock seems to be performing the best, in terms of increasing stock price?
 ```{r}
-plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210))
+plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210),xlim = c(as.POSIXct("2004-01-01"),as.POSIXct("2005-12-31")))
 lines(ProcterGamble$Date[301:432], ProcterGamble$StockPrice[301:432], col="blue")
 lines(IBM$Date[301:432], IBM$StockPrice[301:432], col="orange")
 lines(GE$Date[301:432], GE$StockPrice[301:432], col="brown")
