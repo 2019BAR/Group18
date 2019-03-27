@@ -131,11 +131,49 @@ rug是最準的，因為rug是直接在圖的下方，為每一數值標記一�
 假如賭場老闆從零開始把每10秒鐘設為一個區間，每個區間的賭金是五塊錢 ...<br>
 &emsp;■ 你要怎麼押注，才能獲得最高的期望值呢？<br>
 &emsp;<font color=blue> answer </font><br>
+
+```{r}
+library(dplyr)
+W = faithful$eruptions
+# Smooth PDF
+Adjust = 0.5    # bandwidth adjustment
+DEN = density(W, adjust = Adjust)
+
+# Smooth CDF
+PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)
+
+seq_time = seq(1,6,1/6)
+ans = sapply(seq_time, function(x){
+  pro = integrate(PDF, x,(x+(1/6)))$value
+  -5*(1-pro) + 100*pro
+})
+
+end = seq_time+(1/6)
+seq.time.data = data.frame(start=paste(seq_time,"~",end))
+seq.time.data$exp = ans
+
+seq.time.data[seq.time.data$exp>0,]$start
+
+```
+
+
 &emsp;■ 你的賭金和期望值各是多少？<br>
 &emsp;<font color=blue> answer </font><br>
+
+
+```{r}
+ans
+```
+
 <br>
 將獲利的期望值和賭金的比值稱為「期望投資報酬率」 ...<br>
 &emsp;■ 「最大期望投資報酬率」和「最大期望報酬」的投資策略是一樣的嗎？<br>
+
+```{r}
+ans/5
+
+```
+
 &emsp;<font color=blue> answer </font><br>
 &emsp;■ 你認為哪一個策略目標比較好呢？ 為什麼？<br>
 &emsp;<font color=blue> answer </font><br>
@@ -177,7 +215,7 @@ adj = (bx[2] - bx[1])/2
 steps = stepfun(bx-adj, c(0, sapply(bx, function(b) mean(W <= b))))
 plot(steps, cex=0, col='#33CC337F', lwd=3, lty=1, add=T)
 
-seq_time = seq(1,6,1/6)
+
 seq_time
 
 
@@ -191,6 +229,7 @@ PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)
 
 integrate(PDF, 3.8, 4.8)$value
 
+seq_time = seq(1,6,1/6)
 ans = sapply(seq_time, function(x){
   pro = integrate(PDF, x,(x+(1/6)))$value
   -5*(1-pro) + 100*pro
