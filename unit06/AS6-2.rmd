@@ -83,15 +83,15 @@ rug是最準的，因為rug是直接在圖的下方，為每一數值標記一�
 <br>
 【B.調整參數】調整一下模型參數的滑桿 ...<br>
 &emsp;■ 你覺得最合適的直方圖欄數(`support/binwidth`)是？ 為甚麼？<br>
-&emsp;<font color=blue> answer </font><br>
+&emsp;&emsp;A:直方圖欄數=16較適合；如此一來較能減弱離群值的影響
 &emsp;■ 最合適的平滑模型頻寬(`bandwidth`)呢？<br>
-&emsp;<font color=blue> answer </font><br>
+&emsp;&emsp;A:頻寬=0.5較適合
 &emsp;■ 調高欄寬和頻寬會讓模型變複雜，還是變簡單呢？<br>
-&emsp;<font color=blue> answer </font><br>
+&emsp;&emsp;A:調高欄寬變複雜；平寬變簡單
 &emsp;■ 模型越複雜，它跟實際值之間的誤差是越大、還是越小？<br>
-&emsp;<font color=blue> answer </font><br>
+&emsp;&emsp;A:直方圖越複雜誤差越大；平滑模型越複雜誤差越小
 &emsp;■ 那麼，越複雜的模型就會越準，對嗎？<br>
-&emsp;<font color=blue> answer </font><br>
+&emsp;&emsp;A:錯，因為越複雜的圖形可能涵蓋離群值，做出來的預測結果就會受其影響
 <br>
 【C.建立模型、估計機率】<br>
 請從課堂筆記的程式碼找出來 ... <br>
