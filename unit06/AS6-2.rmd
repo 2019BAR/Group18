@@ -8,7 +8,15 @@ output:
     theme: flatly
     css: style.css
 ---
-組員： `B035040052 林榮鏵` `B056090039 楊禾馨` `M064020056 閻俞蓉` `M064111003 洪筱涵` `M074111035 劉志峰`
+
+組員：
+
+- M074050010	簡怡菱	人管所
+- m074020026	陳弘翊	資管所
+- B054020026	莊子霆	資管系
+- B056060016	陳奕瑋	政經系
+- B056060041	鄭鈺蓁	政經系
+- M074020045	張家銘	資管所
 
 
 ```{r results='hide', message=FALSE, warning=FALSE, echo=FALSE}
@@ -58,21 +66,23 @@ pacman::p_load(dplyr)
 ### <span style="font-size:22px">`r "\U1F5FF"` 問題討論：</span>  {data-height=250}
 <p class="qiz">
 【A.選擇方法】<br>
-【A.選擇方法】<br>
 &emsp;■ 我們為甚麼需要隨機變數？ 什麼時候我們需要用到隨機變數？<br>
 隨機變數的定義是指變數的值無法預先確定僅以一定的可能性(概率)取值的量。它是由於隨機而獲得的非確定值。所以要有隨機變數才能用以預測未來發生事件的可能性<br>
 什麼時候用到?當我們擁有過去的資料，又想預測未來的機率時候，就會用到了<br>
 &emsp;■ 隨機變數沒有固定的值，那我們要如何做計算呢？<br>
 用程式模擬(R)預估可能的結果<br>
 &emsp;■ 我們可以用直方圖或數值標記來估計噴發時間落在某一區間的機率嗎？<br>
-可以，renderGauge({<br>
-    DEN = density(D, adjust = input$B)<br>
-    PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)<br>
+可以，
+```
+renderGauge({
+    DEN = density(D, adjust = input$B)
+    PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)
     PROB = integrate(PDF, input$R[1], input$R[2])$value<br>
-    gauge(round(100*PROB), min = 0, max = 100, symbol = '%', gaugeSectors(<br>
-      success = c(41, 100), warning = c(21, 40), danger = c(0, 20)) )<br>
-    }),<br>
-  sliderInput("R", "數值範圍", 1, 6, c(1,1), 0.2, width='400px'),<br>
+    gauge(round(100*PROB), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(41, 100), warning = c(21, 40), danger = c(0, 20)) )
+    }),
+  sliderInput("R", "數值範圍", 1, 6, c(1,1), 0.2, width='400px')
+```
 &emsp;■ 直方圖(histogram)也可以當作一種模型嗎？ 數值標記(rug)呢？<br>
 可以，數值標記只需在原本的code後面加上add=T  就能加入數值標記了<br>
 &emsp;■ 直方圖和平滑模型哪一個比較適合用來表示噴發時間的分布？ 為甚麼？<br>
