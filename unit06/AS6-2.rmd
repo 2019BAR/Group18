@@ -192,16 +192,10 @@ ans/5
 
 
 ###Faith.R
-```{r}
-library(dplyr)
-summary(faithful)
-D = faithful$eruptions
-hist(D,main="eruptions",xlab="Time(min)")
-W = faithful$eruptions
-hist(W,main="waiting",xlab="Time(min)")
-```
+
 
 ```{r}
+library(dplyr)
 head(faithful)
 D = faithful$waiting  # copy to a short name
 
