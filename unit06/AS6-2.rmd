@@ -40,11 +40,31 @@ pacman::p_load(dplyr)
 &emsp;■ 因此平滑密度曲線通常比較適合用來表示連續變數的分布<br>
 &emsp;■ 機率密度函數(PDF)積分之後就可以得到`累計機率函數(CDF)`，前者好懂，後者好算<br>
 <br>
-【C】資料、模型、方法、參數：<br>
-&emsp;■ 透過調整`方法參數`，同一份資料用同一種`方法`可以做出不同的`模型`<br>
-&emsp;■ 通常模型越複雜，它跟訓練資料之間的誤差就越小<br>
-&emsp;■ 但是模型太複雜就會失去一般性，反而不能夠準確的估計訓練資料以外的對象<br>
-&emsp;■ 所以我們需要用方法參數來控制分析方法的複雜度，避免`過度適配`(`over fitting`)<br>
+【C.建立模型、估計機率】<br>
+請從課堂筆記的程式碼找出來 ... <br>
+&emsp;■ 從變數向量(`D`)求出機率密度曲線(`DEN`)<br>
+&emsp;answer:Adjust = 1    # bandwidth adjustment<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;DEN = density(D, adjust = Adjust)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;lines(DEN, col='gold', lwd=3)<br>
+
+&emsp;■ 將機率密度曲線(`DEN`)轉換成機率密度函數(`PDF`)<br>
+&emsp;answer:PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)<br>
+
+&emsp;■ 對機率密度函數(`PDF`)做積分，算出機率(`PROB`)<br>
+&emsp;answer:integrate(PDF, x1, y1)$value<br>
+這三行程式，然後...<br>
+
+&emsp;■ 將頻寬調整參數(`adjust`)設為`1`，算出「等待時間」落在80到90之間的機率<br>
+&emsp;answer:x1 = 80; x2 = 90<br>
+&emsp;&emsp;&emsp;&emsp;rect(x1,-0.1,x2,1.2,col= rgb(0,1,0,alpha=0.2),border=NA)<br>
+&emsp;&emsp;&emsp;&emsp;(integrate(PDF, x1, x2)$value)<br>
+&emsp;&emsp;&emsp;&emsp;機率為0.2685<br>
+
+&emsp;■ 將頻寬調整參數設為`0.5`，算出等待時間落在80到90之間的機率<br>
+&emsp;answer:0.2827451
+
+&emsp;■ 算出來的機率比較高的就是比較好的模型，對嗎？ 為甚麼？<br>
+&emsp;answer:機率變大只是因為每個區間的範圍改的比較細，會越接近預測
 <br>
 【D】估計機率的程序：<br>
 &emsp;■ 選擇分析方法<br>
