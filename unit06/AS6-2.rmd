@@ -106,23 +106,28 @@ rug是最準的，因為rug是直接在圖的下方，為每一數值標記一�
 【C.建立模型、估計機率】<br>
 請從課堂筆記的程式碼找出來 ... <br>
 &emsp;■ 從變數向量(`D`)求出機率密度曲線(`DEN`)<br>
-&emsp;answer:Adjust = 1    # bandwidth adjustment<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;DEN = density(D, adjust = Adjust)<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;lines(DEN, col='gold', lwd=3)<br>
-
+```
+Adjust = 1    # bandwidth adjustment<br>
+DEN = density(D, adjust = Adjust)<br>
+lines(DEN, col='gold', lwd=3)<br>
+```
 &emsp;■ 將機率密度曲線(`DEN`)轉換成機率密度函數(`PDF`)<br>
-&emsp;answer:PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)<br>
-
+```
+PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)<br>
+```
 &emsp;■ 對機率密度函數(`PDF`)做積分，算出機率(`PROB`)<br>
-&emsp;answer:integrate(PDF, x1, y1)$value<br>
+```
+integrate(PDF, x1, y1)$value<br>
+```
 這三行程式，然後...<br>
 
 &emsp;■ 將頻寬調整參數(`adjust`)設為`1`，算出「等待時間」落在80到90之間的機率<br>
-&emsp;answer:x1 = 80; x2 = 90<br>
-&emsp;&emsp;&emsp;&emsp;rect(x1,-0.1,x2,1.2,col= rgb(0,1,0,alpha=0.2),border=NA)<br>
-&emsp;&emsp;&emsp;&emsp;(integrate(PDF, x1, x2)$value)<br>
-&emsp;&emsp;&emsp;&emsp;機率為0.2685<br>
-
+```
+x1 = 80; x2 = 90<br>
+rect(x1,-0.1,x2,1.2,col= rgb(0,1,0,alpha=0.2),border=NA)<br>
+(integrate(PDF, x1, x2)$value)<br>
+機率為0.2685<br>
+```
 &emsp;■ 將頻寬調整參數設為`0.5`，算出等待時間落在80到90之間的機率<br>
 &emsp;answer:0.2827451
 
