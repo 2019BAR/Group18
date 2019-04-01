@@ -235,7 +235,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">資料案例：老忠實</h1>
 <h4 class="author"><em>第 18 組</em></h4>
-<h4 class="date"><em>2019-04-01 15:28:30</em></h4>
+<h4 class="date"><em>2019-04-01 18:35:09</em></h4>
 
 </div>
 
@@ -282,7 +282,7 @@ rect(x1,-0.1,x2,1.2,col= rgb(0,1,0,alpha=0.2),border=NA)
 (integrate(PDF, x1, x2)$value)
 機率為0.2685</code></pre>
 <p> ■ 將頻寬調整參數設為<code>0.5</code>，算出等待時間落在80到90之間的機率<br>  <font color="blue">answer:0.2827451</font></p>
-<p> ■ 算出來的機率比較高的就是比較好的模型，對嗎？ 為甚麼？<br>  <font color="blue">answer:機率變大只是因為每個區間的範圍改的比較細，會越接近預測</font> <br> 【D.預測與決策】<br> 假設有一個賭局，你可以花30元選定一個連續60秒的時段，如果老忠實下一次的噴發時間落在你指定的區間，你就可以贏到100元；請你使用頻寬為<code>0.5</code>的平滑密度模型 …<br>  ■ 決定要不要參加這個賭局<br>  <font color="blue"> 當然要！ </font><br>  ■ 如果你參加的話，你要把噴發時間設定在哪一個區間呢？<br>  <font color="blue"> 3.9-4.9 </font><br>  ■ 你設在這個區間的話，參加這個賭局的期望值是？<br>  <font color="blue"> 期望值 = 0.48<code>*</code>100 + 0.52<code>*</code>(-30) = 32.4 </font><br> <br> 假如賭場老闆從零開始把每10秒鐘設為一個區間，每個區間的賭金是五塊錢 …<br>  ■ 你要怎麼押注，才能獲得最高的期望值呢？<br></p>
+<p> ■ 算出來的機率比較高的就是比較好的模型，對嗎？ 為甚麼？<br>  <font color="blue">answer:機率變大只是因為每個區間的範圍改的比較細，會越接近預測</font> <br> 【D.預測與決策】<br> 假設有一個賭局，你可以花30元選定一個連續60秒的時段，如果老忠實下一次的噴發時間落在你指定的區間，你就可以贏到100元；請你使用頻寬為<code>0.5</code>的平滑密度模型 …<br>  ■ 決定要不要參加這個賭局<br>  <font color="blue"> 當然要！ </font><br>  ■ 如果你參加的話，你要把噴發時間設定在哪一個區間呢？<br>  <font color="blue"> 3.9-4.9 </font><br>  ■ 你設在這個區間的話，參加這個賭局的期望值是？<br>  <font color="blue"> 期望值 = 0.48<code>*</code>70 + 0.52<code>*</code>(-30) = 18 </font><br> <br> 假如賭場老闆從零開始把每10秒鐘設為一個區間，每個區間的賭金是五塊錢 …<br>  ■ 你要怎麼押注，才能獲得最高的期望值呢？<br></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 匯入dplyr套件</span>
 <span class="kw">library</span>(dplyr)
 

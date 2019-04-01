@@ -141,7 +141,7 @@ rect(x1,-0.1,x2,1.2,col= rgb(0,1,0,alpha=0.2),border=NA)
 &emsp;■ 如果你參加的話，你要把噴發時間設定在哪一個區間呢？<br>
 &emsp;<font color=blue> 3.9-4.9 </font><br>
 &emsp;■ 你設在這個區間的話，參加這個賭局的期望值是？<br>
-&emsp;<font color=blue> 期望值 = 0.48`*`100 + 0.52`*`(-30) = 32.4 </font><br>
+&emsp;<font color=blue> 期望值 = 0.48`*`70 + 0.52`*`(-30) = 18 </font><br>
 <br>
 假如賭場老闆從零開始把每10秒鐘設為一個區間，每個區間的賭金是五塊錢 ...<br>
 &emsp;■ 你要怎麼押注，才能獲得最高的期望值呢？<br>
