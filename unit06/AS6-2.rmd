@@ -67,10 +67,10 @@ pacman::p_load(dplyr)
 <p class="qiz">
 【A.選擇方法】<br>
 &emsp;■ 我們為甚麼需要隨機變數？ 什麼時候我們需要用到隨機變數？<br>
-隨機變數的定義是指變數的值無法預先確定僅以一定的可能性(概率)取值的量。它是由於隨機而獲得的非確定值。所以要有隨機變數才能用以預測未來發生事件的可能性<br>
-什麼時候用到?當我們擁有過去的資料，又想預測未來的機率時候，就會用到了<br>
+<font color=blue>隨機變數的定義是指變數的值無法預先確定僅以一定的可能性(概率)取值的量。它是由於隨機而獲得的非確定值。所以要有隨機變數才能用以預測未來發生事件的可能性<br>
+什麼時候用到?當我們擁有過去的資料，又想預測未來的機率時候，就會用到了</font><br>
 &emsp;■ 隨機變數沒有固定的值，那我們要如何做計算呢？<br>
-用程式模擬(R)預估可能的結果<br>
+<font color=blue>用程式模擬(R)預估可能的結果</font><br>
 &emsp;■ 我們可以用直方圖或數值標記來估計噴發時間落在某一區間的機率嗎？<br>
 可以，
 ```
@@ -84,24 +84,24 @@ renderGauge({
   sliderInput("R", "數值範圍", 1, 6, c(1,1), 0.2, width='400px')
 ```
 &emsp;■ 直方圖(histogram)也可以當作一種模型嗎？ 數值標記(rug)呢？<br>
-可以，數值標記只需在原本的code後面加上add=T  就能加入數值標記了<br>
+<font color=blue>可以，數值標記只需在原本的code後面加上add=T  就能加入數值標記了</font><br>
 &emsp;■ 直方圖和平滑模型哪一個比較適合用來表示噴發時間的分布？ 為甚麼？<br>
-直方圖較為適合，因為當平滑模型的bandwidth太大，將因為曲線太平滑而難以觀察。<br>
+<font color=blue>直方圖較為適合，因為當平滑模型的bandwidth太大，將因為曲線太平滑而難以觀察。</font><br>
 &emsp;■ 用數值標記來預測噴發時間會比用直方圖「準」嗎？ 「準」是什麼意思呢？<br>
-rug是最準的，因為rug是直接在圖的下方，為每一數值標記一筆。<br>
-在這裡，準的意思是指是否能完整的呈現原始資料的所有內容。<br>
+<font color=blue>rug是最準的，因為rug是直接在圖的下方，為每一數值標記一筆。<br>
+在這裡，準的意思是指是否能完整的呈現原始資料的所有內容。</font><br>
 <br>
 【B.調整參數】調整一下模型參數的滑桿 ...<br>
 &emsp;■ 你覺得最合適的直方圖欄數(`support/binwidth`)是？ 為甚麼？<br>
-&emsp;&emsp;A:直方圖欄數=16較適合；如此一來較能減弱離群值的影響
+&emsp;<font color=blue>A:直方圖欄數=16較適合；如此一來較能減弱離群值的影響</font><br>
 &emsp;■ 最合適的平滑模型頻寬(`bandwidth`)呢？<br>
-&emsp;&emsp;A:頻寬=0.5較適合
+&emsp;<font color=blue>A:頻寬=0.5較適合</font><br>
 &emsp;■ 調高欄寬和頻寬會讓模型變複雜，還是變簡單呢？<br>
-&emsp;&emsp;A:調高欄寬變複雜；平寬變簡單
+&emsp;<font color=blue>A:調高欄寬變複雜；平寬變簡單</font><br>
 &emsp;■ 模型越複雜，它跟實際值之間的誤差是越大、還是越小？<br>
-&emsp;&emsp;A:直方圖越複雜誤差越大；平滑模型越複雜誤差越小
+&emsp;<font color=blue>A:直方圖越複雜誤差越大；平滑模型越複雜誤差越小</font><br>
 &emsp;■ 那麼，越複雜的模型就會越準，對嗎？<br>
-&emsp;&emsp;A:錯，因為越複雜的圖形可能涵蓋離群值，做出來的預測結果就會受其影響
+&emsp;<font color=blue>A:錯，因為越複雜的圖形可能涵蓋離群值，做出來的預測結果就會受其影響</font><br>
 <br>
 【C.建立模型、估計機率】<br>
 請從課堂筆記的程式碼找出來 ... <br>
@@ -129,27 +129,30 @@ rect(x1,-0.1,x2,1.2,col= rgb(0,1,0,alpha=0.2),border=NA)
 機率為0.2685
 ```
 &emsp;■ 將頻寬調整參數設為`0.5`，算出等待時間落在80到90之間的機率<br>
-&emsp;answer:0.2827451
+&emsp;<font color=blue>answer:0.2827451</font>
 
 &emsp;■ 算出來的機率比較高的就是比較好的模型，對嗎？ 為甚麼？<br>
-&emsp;answer:機率變大只是因為每個區間的範圍改的比較細，會越接近預測
+&emsp;<font color=blue>answer:機率變大只是因為每個區間的範圍改的比較細，會越接近預測</font>
 <br>
 【D.預測與決策】<br>
 假設有一個賭局，你可以花30元選定一個連續60秒的時段，如果老忠實下一次的噴發時間落在你指定的區間，你就可以贏到100元；請你使用頻寬為`0.5`的平滑密度模型 ...<br>
 &emsp;■ 決定要不要參加這個賭局<br>
 &emsp;<font color=blue> 當然要！ </font><br>
 &emsp;■ 如果你參加的話，你要把噴發時間設定在哪一個區間呢？<br>
-&emsp;<font color=blue> 3.8-4.8 </font><br>
+&emsp;<font color=blue> 3.9-4.9 </font><br>
 &emsp;■ 你設在這個區間的話，參加這個賭局的期望值是？<br>
 &emsp;<font color=blue> 期望值 = 0.48`*`100 + 0.52`*`(-30) = 32.4 </font><br>
 <br>
 假如賭場老闆從零開始把每10秒鐘設為一個區間，每個區間的賭金是五塊錢 ...<br>
 &emsp;■ 你要怎麼押注，才能獲得最高的期望值呢？<br>
-&emsp;<font color=blue> answer </font><br>
 
 ```{r}
+# 匯入dplyr套件
 library(dplyr)
+
+#取得噴發持續時間
 W = faithful$eruptions
+
 # Smooth PDF
 Adjust = 0.5    # bandwidth adjustment
 DEN = density(W, adjust = Adjust)
@@ -157,27 +160,43 @@ DEN = density(W, adjust = Adjust)
 # Smooth CDF
 PDF = approxfun(DEN$x, DEN$y, yleft=0, yright=0)
 
+#取得每10秒的時間區間
 seq_time = seq(1,6,1/6)
+
+# 計算每10秒的發生機率，並計算期望值（沒中(-5 * (1-pro)) ＋ 中((100-5) * pro）
 ans = sapply(seq_time, function(x){
   pro = integrate(PDF, x,(x+(1/6)))$value
-  -5*(1-pro) + 100*pro
+  -5*(1-pro) + 95*pro
 })
 
+# 計算結束時間
 end = seq_time+(1/6)
+
+# 整合開始時間與結束時間為一字串 (start ~ end)
 seq.time.data = data.frame(start=paste(seq_time,"~",end))
+
+# 放入期望值到data.frame
 seq.time.data$exp = ans
 
-seq.time.data[seq.time.data$exp>0,]$start
+# 取出期望值大於0的放到target)time
+target_time = seq.time.data[seq.time.data$exp>0,]
+
+# 印出data.frame
+target_time
 
 ```
 
 
 &emsp;■ 你的賭金和期望值各是多少？<br>
-&emsp;<font color=blue> answer </font><br>
-
 
 ```{r}
-ans
+# 賭金
+pay_value = 5 * nrow(target_time)
+pay_value
+# 期望值
+get_value = sum(target_time$exp)
+get_value
+
 ```
 
 <br>
@@ -185,13 +204,13 @@ ans
 &emsp;■ 「最大期望投資報酬率」和「最大期望報酬」的投資策略是一樣的嗎？<br>
 
 ```{r}
-ans/5
+get_value / pay_value
 
 ```
 
-&emsp;<font color=blue> answer </font><br>
+&emsp;<font color=blue>不一樣，最大投資報酬率有考慮到每個投入的賭金的效益，最大期望報酬只求獲利最大。</font><br>
 &emsp;■ 你認為哪一個策略目標比較好呢？ 為什麼？<br>
-&emsp;<font color=blue> answer </font><br>
+&emsp;<font color=blue>最大投資報酬率比較好，因爲還有考慮到本金的問題。</font><br>
 <br>
 </p class="qiz">
 
