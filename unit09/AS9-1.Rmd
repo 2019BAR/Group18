@@ -1,0 +1,152 @@
+---
+title: UNIT09D 案例：航空公司的市場區隔
+author: 第18組
+date: "`r Sys.time()`"
+output: 
+  html_document:
+    highlight: pygments
+    theme: flatly
+    css: style.css
+---
+
+```{r results='hide', message=FALSE, warning=FALSE, echo=F}
+# 這些程式碼設定網頁的格式，並安裝、載入一些基本的套件，請大家不要去改動<br>
+rm(list=ls(all=T))
+knitr::opts_chunk$set(comment = NA)
+knitr::opts_knit$set(global.par = TRUE)
+par(cex=0.8)
+options(scipen=20, digits=5, width=80)
+if(!require(pacman)) install.packages("pacman")
+```
+<br>
+
+<p class="wwl">
+<span style="font-size:24px">`r "\U1F4A1"` 學習重點：</span><br>
+&emsp; ■ 集群分析的基本觀念<br>
+&emsp; ■ 距離矩陣：Distance Matrix<br>
+&emsp; ■ 層級式集群分析：Hierarchical Cluster Analysis<br>
+&emsp; ■ 樹狀圖(Dendrogram)的判讀<br>
+&emsp; ■ 依據樹狀圖決定要分多少群<br>
+&emsp; ■ 以群組平均值檢視各族群的屬性<br>
+</p class="wwl">
+
+<hr>
+
+```{r results='hide', message=FALSE, warning=FALSE}
+pacman::p_load(dplyr, ggplot2)
+```
+<br>
+
+### 【A】航空公司顧客資料集
+
+```{r}
+A = read.csv('data/AirlinesCluster.csv')
+summary(A)
+```
+
++ Balance: 可用里程數
++ QualMiles: 可用高等里程數
++ BonusMiles: 過去12個月非飛行里程數
++ BonusTrans: 過去12個月非飛行交易次數
++ FlightMiles: 過去12個月飛行里程數
++ FlightTrans: 過去12個月飛行交易次數
++ DaysSinceEnroll: 會員年資 (天)
+
+
+<br><br>
+
+### 【B】資料常態化
+
+<span style="font-size:24px">`r "\U1F5FF"`</span>
+為甚麼要做資料常態化？<br>
+```{r}
+colMeans(A) %>% sort
+```
+
+```{r}
+AN = scale(A) %>% data.frame
+```
+
+```{r}
+sapply(AN, mean)
+```
+
+```{r}
+sapply(AN, sd)
+```
+
+<br><br>
+
+### 【C】層級式集群分析 Hirarchical Clustering  
+
+1.距離矩陣
+```{r}
+d = dist(AN, method="euclidean")
+```
+
+2.層級式集群分析
+```{r}
+hc = hclust(d, method='ward.D')
+```
+
+3.畫出樹狀圖
+```{r}
+plot(hc)
+```
+<br>
+<span style="font-size:24px">`r "\U1F5FF"`</span>
+如何從樹狀圖決定群數？<br>
+
+4.分割群組 
+```{r}
+kg = cutree(hc, k=5)
+table(kg)
+```
+
+<br><br>
+
+### 【D】觀察群組特性
+
+```{r}
+sapply(split(A,kg), colMeans) %>% round(2) 
+```
+
+```{r}
+par(cex=0.8)
+split(AN,kg) %>% sapply(colMeans) %>% barplot(beside=T,col=rainbow(7))
+legend('topright',legend=colnames(A),fill=rainbow(7))
+```
+
+<br><br>
+
+<p class="qiz">
+<span style="font-size:24px">`r "\U1F5FF"` 討論問題：</span><br>
+&emsp; ■ 請你們為這五個族群各起一個名稱<br>
+&emsp;A:長輩：會員資歷最高，但沒甚麼在搭飛機<br>
+&emsp;凱子：常搭飛機累積很多里程數，但沒再用<br>
+&emsp;吃老本：資深會員累積很多里程數用不完<br>
+&emsp;精明幹練的白領階級：平均分配，前幾年蠻常飛的普通會員<br>
+&emsp;蔡B八：剛開始用的又不常飛的菜鳥會員<br>
+&emsp; ■ 請你們為這五個族群各設計一個行銷策略<br>
+&emsp;A:長輩: 依年資的折扣促銷計畫，越長折扣越多<br>
+&emsp;凱子族: 不用管他讓他繼續花錢，也可搬個VVIP證之類<br>
+&emsp;吃老本: 推出里程數可以<b>加倍</b>折抵機票的促銷方案<br>
+&emsp;白領族: 短距離的機票折扣<br>
+&emsp;菜逼八: 提供首次飛行高額折價卷<br>
+&emsp; ■ 統計上最好的分群也是實務上最好的分群嗎<br>
+&emsp;A:不是，也可以用kmeans分群演算法<br>
+&emsp; ■ 除了考慮群內和群間距離之外，實務上的分群通常還需要考慮那些因數？<br>
+&emsp;A:分幾群也是很重要，與最大迭代次數（iteration）。<br>
+
+</p class="qiz">
+
+<br><br><br><hr>
+
+
+
+
+
+
+？
+
+
