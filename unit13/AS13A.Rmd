@@ -151,7 +151,7 @@ df = data.frame(OfficeVisits = quantile(D$OfficeVisits,0.25), Narcotics=quantile
 predict(glm1, df, type="response")
 
 exp(0.0821)
-exp(0.0763)
+exp(0.0763) 
 
 df = data.frame(OfficeVisits = quantile(D$OfficeVisits,0.25)+1, Narcotics=quantile(D$Narcotics,0.25))
 predict(glm1, df, type="response")

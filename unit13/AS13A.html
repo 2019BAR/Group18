@@ -236,7 +236,7 @@ $(document).ready(function () {
 <h1 class="title toc-ignore">UNIT13A：類別模型、預測機率與商業決策</h1>
 <h3 class="subtitle"><em>案例一：預防性醫療</em></h3>
 <h4 class="author"><em>中山大學管理學院 卓雍然</em></h4>
-<h4 class="date"><em>2019-05-23 13:37:11</em></h4>
+<h4 class="date"><em>2019-05-23 13:42:37</em></h4>
 
 </div>
 
@@ -405,7 +405,7 @@ p1 =<span class="st"> </span><span class="kw">sapply</span>(<span class="kw">seq
 0.11192 </code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">exp</span>(<span class="fl">0.0821</span>)</code></pre></div>
 <pre><code>[1] 1.0856</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">exp</span>(<span class="fl">0.0763</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">exp</span>(<span class="fl">0.0763</span>) </code></pre></div>
 <pre><code>[1] 1.0793</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df =<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">OfficeVisits =</span> <span class="kw">quantile</span>(D<span class="op">$</span>OfficeVisits,<span class="fl">0.25</span>)<span class="op">+</span><span class="dv">1</span>, <span class="dt">Narcotics=</span><span class="kw">quantile</span>(D<span class="op">$</span>Narcotics,<span class="fl">0.25</span>))
 <span class="kw">predict</span>(glm1, df, <span class="dt">type=</span><span class="st">&quot;response&quot;</span>)</code></pre></div>
