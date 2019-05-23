@@ -1,0 +1,422 @@
+---
+title: "midterm"
+author: "第18組"
+date: "4/30/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pacman::p_load(dplyr, tidyr, ggplot2, ggthemes,maps,d3heatmap,plotly,googleVis,tidytext,topicmodels)
+customer = read.csv('./brazilian-ecommerce/olist_customers_dataset.csv')
+location = read.csv('./brazilian-ecommerce/olist_geolocation_dataset.csv')
+review = read.csv('./brazilian-ecommerce/olist_order_reviews_dataset_translated.csv',stringsAsFactors = F)
+payment = read.csv('./brazilian-ecommerce/olist_order_payments_dataset.csv')
+order = read.csv('./brazilian-ecommerce/olist_orders_dataset.csv')
+product = read.csv('./brazilian-ecommerce/olist_products_dataset.csv')
+seller = read.csv('./brazilian-ecommerce/olist_sellers_dataset.csv')
+item = read.csv('./brazilian-ecommerce/olist_order_items_dataset.csv')
+English = read.csv('./brazilian-ecommerce/product_category_name_translation.csv')
+
+done = left_join(product, English)
+```
+
+
+# 最小2016-10-02
+# 最大2018-08-31
+```{r}
+review$review_creation_date = as.Date(review$review_creation_date)
+review$review_score = as.factor(review$review_score)
+
+clean_data =  review %>% filter(!is.na(.$review_score) & !is.na(.$review_creation_date)) %>% 
+  mutate(review_month=format(review_creation_date,"%m")) %>% 
+  group_by(review_month,review_score) %>% summarise(count = n()) %>% 
+  group_by(review_month) %>% mutate(sum_month=sum(count),avg_count = count/sum_month)
+
+```
+
+# 依照月份顯示評論分佈
+```{r}
+ggplot(clean_data, aes(x =review_month,y=avg_count,fill=review_score)) +
+  geom_bar(position = "stack",stat = "identity") +
+  labs(fill='顧客評分',x="月份",y="比例") +
+  theme(text = element_text(family="LiGothicMed"))
+```
+
+```{r}
+clean_df = review %>% filter(translate_message !="")
+
+# clean_title_df = filter(review,translate_title)
+
+text_df = tibble(doc_id=clean_df$review_id,text=clean_df$translate_message)
+text_df
+token_df = text_df %>%
+  unnest_tokens(word, text) %>%
+  group_by(word) %>% 
+  mutate(count=n())
+
+data("stop_words")
+
+a =token_df %>% anti_join(stop_words)
+
+devotion_dtm <-a %>% cast_dtm(doc_id, word, count)
+devotion_dtm
+
+
+devotion_lda <- LDA(devotion_dtm, k = 4, control = list(seed = 1234))
+
+devotion_topics_removed <- tidy(devotion_lda, matrix = "beta")
+devotion_topics_removed
+
+devotion_topics_removed %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta) %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
+
+
+```{r}
+review = read.csv('./brazilian-ecommerce/olist_order_reviews_dataset.csv',stringsAsFactors = F)
+Brazil<-map_data("world")%>%filter(region=="Brazil")
+
+selllocation<-location %>% group_by(geolocation_city) %>% summarise(selllat = max(geolocation_lat),selllng=max(geolocation_lng))
+custlocation<-location %>% group_by(geolocation_city) %>% summarise(custlat = max(geolocation_lat),custlng=max(geolocation_lng))
+
+MergedData<-merge(item,seller,by.x="seller_id",by.y="seller_id")
+CustOrd<-merge(order,customer,by.x="customer_id",by.y="customer_id")
+custsellord<-merge(CustOrd,MergedData,by="order_id")
+custsellordprod<-merge(custsellord,product,by="product_id")
+complete<-merge(custsellordprod,payment,by="order_id")
+complete1<-merge(complete,selllocation,by.x="seller_city",by.y="geolocation_city")
+complete2<-merge(complete1,custlocation,by.x="customer_city",by.y="geolocation_city")
+
+location2 = merge(location, seller, by.x="geolocation_zip_code_prefix", by.y="seller_zip_code_prefix")
+
+custlocation = location2 %>% group_by(geolocation_city) %>% summarise(custlat = max(geolocation_lat),custlng=max(geolocation_lng))
+
+#Brazils most Northern spot is at 5 deg 16′ 27.8″ N latitude.;
+geo = location[location$geolocation_lat <= 5.27438888,]
+#it’s most Western spot is at 73 deg, 58′ 58.19″W Long.
+geo = location[location$geolocation_lng >= -73.98283055,]
+#It’s most southern spot is at 33 deg, 45′ 04.21″ S Latitude.
+geo = location[location$geolocation_lat >= -33.75116944,]
+#It’s most Eastern spot is 34 deg, 47′ 35.33″ W Long.
+geo = location[location$geolocation_lng <=  -34.79314722,]
+
+#For removing the typo error.(The lats that out of Brazil's map)
+complete2 = complete2[complete2$selllat <= 5.27438888,]
+complete2 = complete2[complete2$custlat <= 5.27438888,]
+
+#Just printing out the seller's locations
+ggplot() +
+  geom_polygon(data = Brazil, aes(x=long, y = lat, group = group), fill="black")+
+  geom_point(data= complete2,aes(x=selllng,y=selllat,color=seller_state),size=0.2)
+
+###top 20 buyers' locations
+#For tracing out the unique customeromer id
+temp1 = merge(customer, order, by.x = "customer_id") 
+temp2 = merge(temp1, payment, by.x = "order_id") %>% 
+  group_by(customer_unique_id) %>% 
+  mutate(avgvalue = mean(payment_value)) %>% 
+  arrange(desc(avgvalue))
+temp3 = head(temp2, 20)
+temp4 = merge(temp3, complete2, by = "customer_unique_id") %>% 
+  group_by(customer_unique_id) %>% 
+  filter(customer_state.y != "PA")
+
+#For mapping out the top 20 buyers' location
+ggplot() +
+  geom_polygon(data = Brazil, aes(x=long, y = lat, group = group), fill="black")+
+  geom_point(data= temp4, aes(x=custlng,y=custlat,color=customer_state.y),size=5)+
+  ggtitle("Map of top 20 buyers")
+
+
+C = merge(done, item, by.x = "product_id") %>% 
+  group_by(seller_id) %>% 
+  summarise(
+    ItemsSold = n(),
+  Rev = sum(price),
+  noProd = n_distinct(product_id),
+  avgPrice = mean(price),
+  maxPrice = max(price),
+  minPrice = min(price),
+  avgFreight = mean(freight_value),
+  avgRevProd = Rev/noProd,
+  avgItemsProd = ItemsSold/noProd
+  )
+
+D = merge(C, item, by.x = "seller_id")
+E = merge(D, review, by.x = "order_id") %>% 
+  group_by(seller_id) %>% 
+  arrange(review_score) %>% 
+  summarise(
+      ItemsSold = n(),
+      Rev = sum(price),
+      noProd = n_distinct(product_id),
+      avgPrice = mean(price),
+      maxPrice = max(price),
+      minPrice = min(price),
+      avgFreight = mean(freight_value),
+      avgRevProd = Rev/noProd,
+      avgItemsProd = ItemsSold/noProd,
+      avgreview_score=mean(review_score)
+  )
+
+###
+
+
+#Relationship between freight price and review_score.
+ggplot(E, aes(x = avgreview_score, y = avgFreight )) +
+  geom_point()
+
+###
+
+A = merge(done, item, by = "product_id")
+#Preparing dataframe for the following two visualiztion chart.
+B = merge(A, review, by.x = "order_id") %>% group_by(product_category_name_english) %>% 
+  summarise(
+    Itemsold = n(),
+    noSeller = n_distinct(seller_id),
+    noProd = n_distinct(product_id),
+    Rev = sum(price),
+    avgPrice = mean(price),
+    avgRevProd = Rev / noProd,
+    avgItemsProd = Itemsold/noProd,
+    avgreview_score = mean(review_score),
+    avgSellerRev = Rev/noSeller,
+    dummy = 2018
+  )
+
+#Interactive ggploty chart for specific category's price and noseller 
+g = ggplot(B, aes(x=noSeller, y=avgPrice, size=avgRevProd, color=avgreview_score))+
+  geom_point()+
+  geom_text(aes(label=product_category_name_english, size = 8))
+ggplotly(g)
+
+#Bubble chart
+plot( gvisMotionChart(
+  B, "product_category_name_english","dummy", 
+  options=list(width=800, height=600) ))
+```
+
+# 第二部分
+```{r}
+order = na.omit(order)
+a = merge(order,customer)
+c = merge(a,payment)
+a$order_delivered_customer_date = as.Date(a$order_delivered_customer_date)
+a$order_estimated_delivery_date = as.Date(a$order_estimated_delivery_date)
+a$order_purchase_timestamp = as.Date(a$order_purchase_timestamp)
+a$order_approved_at = as.Date(a$order_approved_at)
+a$order_delivered_carrier_date = as.Date(a$order_delivered_carrier_date)
+
+a$estimated_actual = a$order_delivered_customer_date - a$order_estimated_delivery_date 
+a = na.omit(a)
+
+b= aggregate(a$estimated_actual, by=list(a$customer_state), mean)
+ggplot(b, aes(x=Group.1, y=x)) + geom_bar(stat="identity") + 
+  labs(x="customer state", y="avg time")
+
+
+
+e= a[,c("order_purchase_timestamp","customer_state")]
+table(e$customer_state, month=format(e$order_purchase_timestamp,'%m'))
+table(e$customer_state, month=format(e$order_purchase_timestamp,'%m')) %>%
+as.data.frame.matrix %>% 
+  d3heatmap(F,F,col=colorRamp(c('seagreen','lightyellow','red')))
+```
+
+```{r}
+d = merge(a,review)
+d = aggregate(d$estimated_actual, by = list(d$review_score), mean)
+ggplot(d, aes(x=Group.1, y=x)) + geom_bar(stat="identity") + 
+  labs(x="review score", y="avg time")
+```
+
+```{r}
+a1 = merge(a,review)
+a1 = a1 %>% group_by(customer_state,review_score) %>% summarise(
+  avgtime = mean(estimated_actual),
+  
+)
+ggplot(a1, aes(x=customer_state, y=avgtime,fill=review_score)) + geom_bar(stat="identity") + 
+  labs(x="customer state", y="avg time") 
+```
+
+
+
+```{r}
+a3 = merge(a,item)
+a3 = merge(a3,product)
+a3 = merge(a3,English)
+a3 = merge(a3,review)
+a4 = a3[,c("product_category_name_english","estimated_actual","review_score","price")]
+a5 = a4 %>% group_by(product_category_name_english) %>% summarise(
+  itemsold = n(),
+  avgtime = mean(estimated_actual),
+  avgscore = mean(review_score),
+  avgprice = mean(price)
+)
+ggplot(a5, aes(x = log(itemsold), y = avgtime,col=avgscore,repel = T)) +
+  geom_point(aes(size=log(avgprice))) + geom_text(aes(label= product_category_name_english), size=3)
+ 
+```
+
+
+#第三部份
+
+?????
+顧客真的會看商品介紹嗎: 用P$product_description_lenght
+
+```{r}
+summary(payment)  
+```
+
+付款方式:
+```{r}
+zz_a <- left_join(order[,c(1,2)], customer[,c(1,2,5)]) %>% left_join(payment[,c(1,3)])
+#製作消費者地區與付款方式資料表
+
+#依付款方式分開作圖
+ggplot(zz_a, aes(x=payment_type, fill=customer_state)) + 
+  xlab('付款方式')+
+  ylab('人數')+
+  geom_bar(position="dodge", width = 8) +
+  facet_wrap(~ payment_type, scales = "free")+
+  theme(text = element_text(family="LiGothicMed"))
+
+#顧客地區分布
+ggplot(zz_a, aes(x=customer_state)) + 
+  xlab('地區')+
+  ylab('人數')+
+  ggtitle('各地區顧客人數')+
+  geom_bar(position="dodge")+
+  theme(text = element_text(family="LiGothicMed"))
+```
+
+```{r}
+#觀看商品詳細程度對銷售量影響
+
+#計算各個product_id數量(銷售量)
+zz_temp  = table(item$product_id) %>% as.data.frame() 
+#在product加入銷售量
+product = product %>% merge(zz_temp, by.x = "product_id", by.y = "Var1")
+#取出銷售量、圖片數量、介紹字數欄位結合
+zz_b = product[,c(1:5)] %>% merge(zz_temp, by.x = "product_id", by.y = "Var1", na.rm = T) %>% filter(Freq<10)
+
+ggplot(zz_b, aes(product_description_lenght, product_photos_qty, col = Freq)) + 
+  xlab('商品介紹字數')+
+  ylab('圖片數目')+
+  ggtitle('探討介紹詳細程度對銷售量影響')+
+  scale_colour_continuous("數量")+
+  geom_jitter(size=1) +
+  geom_smooth(method="gam",se = T, col="orange", lty=2) +
+  facet_wrap(~ Freq, scales = "free")+
+  theme(text = element_text(family="LiGothicMed"))
+```
+
+可作為研究分期付款優惠的樣本
+```{r}
+#原本的表格
+ggplot( payment,aes(payment$payment_installments, payment$payment_value)) +    
+  xlab('分期數')+
+  ylab('付款金額')+
+  ggtitle('付款金額與分期數的關係')+
+  geom_jitter(size=0.5) +
+  geom_smooth(method="gam",se = T, col="orange", lty=2)+
+  theme(text = element_text(family="LiGothicMed"))
+
+#低於500的表格
+zz_c = payment %>% filter(payment_value<500)
+ggplot(zz_c,aes(zz_c$payment_installments, zz_c$payment_value)) +   
+  xlab('分期數')+
+  ylab('付款金額')+
+  ggtitle('付款金額與分期數的關係')+ 
+  geom_jitter(size=0.5) +
+  geom_smooth(method="gam",se = T, col="orange", lty=2)+
+  theme(text = element_text(family="LiGothicMed"))
+
+#低於200的表格
+zz_d = payment %>% filter(payment_value<200)
+ggplot( zz_d,aes(zz_d$payment_installments, zz_d$payment_value)) +  
+  xlab('分期數')+
+  ylab('付款金額')+
+  ggtitle('付款金額與分期數的關係')+
+  geom_jitter(size=0.5) +
+  geom_smooth(method="gam",se = T, col="orange", lty=2)+
+  theme(text = element_text(family="LiGothicMed"))
+```
+
+```{r}
+#seller營業額、銷售量、評價   
+item$sum      = item$price + item$freight_value
+item = item %>%left_join(product[,c(1,2)])
+sData = seller %>% left_join(item[,c(1,3,4,6,7,8)]) %>% left_join(review[,c(2,3)])
+b = group_by(item, seller_id)
+sale  = b %>% summarise( #各個賣家的銷售額
+  total = sum(sum)       #4869f7a5dfa277a7dca6462dcf3b52b2賣家銷售額最高
+)
+model_seller = item[item$seller_id == "4869f7a5dfa277a7dca6462dcf3b52b2",] 
+#範例賣家基本資訊(營業額、銷售量、評價、產品)
+
+
+#tapply(Z$avgScore, Z$seller_state, mean) %>% sort %>% tail(20) 
+```
+
+
+```{r}
+#建立seller的基本資料表中的資料表 by Tony的程式碼
+
+#  1.彙整賣家資料表
+Z =  item %>% group_by(seller_id) %>% summarise(
+  ItemsSold = n(),
+  Rev = sum(price),                 #總收益
+  noProd = n_distinct(product_id),  #產品種類(數量)
+  avgPrice = mean(price),           #平均商品價格
+  maxPrice = max(price),            #最大商品價格
+  minPrice = min(price),            #最小商品價格
+  avgFreight = mean(freight_value), #平均運費
+  avgRevProd = Rev/noProd,          #平均產品收益
+  avgItemsProd = ItemsSold/noProd   #種類與商品數比例
+)
+```
+
+
+```{r}
+
+#  2.加入評價
+X = unique(item[,c(1,4)]) %>% left_join(review[,2:3]) %>% 
+  group_by(seller_id) %>% summarise(
+    noReview = n(),                 #回復數量
+    avgScore = mean(review_score),  #平均分數
+    minScore = min(review_score),   #最小分數
+    maxScore = max(review_score))   #最大分數
+Z = Z %>% left_join(X)
+Z = Z[,-1]                          #刪除第一欄位
+is.na(Z) %>% colSums #確認沒有na
+```
+
+```{r}
+#觀察群組資訊 (去掉MAX與MIN)
+ZZ  = Z[-c(5,6,12,13)]
+ZZ1 = scale(ZZ) %>% data.frame 
+zz_dist  = dist(ZZ1, method = "euclidean")
+zz_hc = hclust(zz_dist, method = 'ward.D')
+#plot(hc)  #畫出圖片
+zz_kg = cutree(zz_hc, k = 5) 
+
+sapply(split(ZZ,zz_kg), colMeans) %>% round(2)
+par(cex = 0.8)
+par(family="LiGothicMed")
+split(ZZ1,zz_kg) %>% sapply(colMeans) %>% barplot(beside=T, col=rainbow(9)) 
+legend(38,2.3, c("商品數量", "總銷售額", "商品種類數目","平均商品價格","平均運費","平均商品評價","平均賣出數量","回復數量","平均評價星等"),fill=rainbow(9),cex=0.9)
+```
