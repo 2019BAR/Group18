@@ -9,7 +9,7 @@
 <meta name="generator" content="pandoc" />
 
 
-<meta name="author" content="中山大學管理學院 卓雍然" />
+<meta name="author" content="第18組" />
 
 
 <title>UNIT13C：類別模型、預測機率與商業決策</title>
@@ -447,8 +447,8 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">UNIT13C：類別模型、預測機率與商業決策</h1>
 <h3 class="subtitle"><em>預測與決策</em></h3>
-<h4 class="author"><em>中山大學管理學院 卓雍然</em></h4>
-<h4 class="date"><em>2019-05-23 13:54:40</em></h4>
+<h4 class="author"><em>第18組</em></h4>
+<h4 class="date"><em>2019-05-27 20:40:30</em></h4>
 
 </div>
 
@@ -551,7 +551,7 @@ $(document).ready(function () {
 <li>FP: Action, 沒病; 沒病還開刀（被家屬告到死）<br></li>
 <li>TP: Action, 有病; 有病也開刀（開刀失敗風險高，被家屬告到死又失去一條人命）<br> 這時聰明的醫生都不要開刀就會有比較高的期望報酬<br> <br></li>
 </ul>
-有五種成本分別為<code>$5, $10, $15, $20, $30</code>的介入方法，它們分別可以將風險成本從<code>$100</code>降低到<code>$70, $60, $50, $40, $25</code> …<br>   【H】 它們的最佳期望報酬分別是多少？<br> Ａ：<code>$5</code>,最佳期望報酬為-2145<br> <code>$10</code>,最佳期望報酬為-1980<br> <code>$15</code>,最佳期望報酬為-1650<br> <code>$20</code>,最佳期望報酬為-1320<br> <code>$30</code>,最佳期望報酬為-825<br>   【I】 哪一種介入方法的最佳期望報酬是最大的呢？<br> A:<code>$30</code>的介入方法可以得到最大的最佳期望報酬<br> <br>
+有五種成本分別為<code>$5, $10, $15, $20, $30</code>的介入方法，它們分別可以將風險成本從<code>$100</code>降低到<code>$70, $60, $50, $40, $25</code> …<br>   【H】 它們的最佳期望報酬分別是多少？<br> Ａ：FP:-5,TP:-75,最佳期望報酬為-2830<br> FP:-10,TP:-70,最佳期望報酬為-2830<br> FP:-15,TP:-65,最佳期望報酬為-2775<br> FP:-20,TP:-60,最佳期望報酬為-2720<br> FP:-30,TP:-55,最佳期望報酬為-2700<br>   【I】 哪一種介入方法的最佳期望報酬是最大的呢？<br> A:<code>$30</code>的介入方法可以得到最大的最佳期望報酬<br> <br>
 </p>
 <p><strong>使用<code>manipulate</code>套件做策略模擬</strong></p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw">library</span>(manipulate)</a>

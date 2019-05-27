@@ -1,7 +1,7 @@
 ---
 title: UNIT13B：類別模型、預測機率與商業決策 
 subtitle: 模型的準確性
-author: 中山大學管理學院 卓雍然
+author: 第18組
 date: "`r Sys.time()`"
 output: 
   html_document:
