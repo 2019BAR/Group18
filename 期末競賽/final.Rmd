@@ -1,0 +1,44 @@
+---
+title: "期末資料探索"
+author: "第18組"
+date: "2019/6/5"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+```
+
+```{r}
+Z = read_csv("./ta_feng_all_months_merged.csv") %>%
+  setNames(c("date","cust","age","area","cat","prod","qty","cost","price"))
+Z$date = as.Date(Z$date, format="%m/%d/%Y")
+Z$age[is.na(Z$age)] = "na"
+Z$age = factor(Z$age, levels=c(
+  "<25","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64",">65","na"), labels=c(
+  "a20","a25","a30","a35","a40","a45","a50","a55","a60","a65","na"
+  )) %>% as.character
+Z$area = paste0("z",Z$area)
+summary(Z)
+```
+
+```{r}
+# Quantile of Variables
+sapply(Z[,7:9], quantile, prob=c(.99, .999, .9995))
+# Remove Outliers
+Z = subset(Z, qty<=24 & cost<=3800 & price<=4000) 
+nrow(Z)
+Z$tid = group_indices(Z, date, cust) # same customer same day
+```
+
+```{r}
+# 計算數量
+# No. cust, cat, prod, tid
+sapply(Z[c("cust","cat","prod","tid")], n_distinct)
+```
+
