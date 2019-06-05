@@ -87,20 +87,21 @@ nrow(A)
 ```
 
 ```{r}
-hc = A[,2:7] %>% scale(center = F) %>% dist %>% hclust
+hc = A[,2:4]  %>% dist %>% hclust(method = "ward.D2")
 plot(hc)
-k =6
+k =7
 rect.hclust(hc, k=k, border="red")
+
 ```
 
 ```{r}
-hc = A[,2:7] %>% scale(center = F) %>% dist %>% hclust
-plot(hc)
-k =6
-rect.hclust(hc, k=k, border="red")
-```
-```{r}
 g = cutree(hc,k=k)
-table(g) %>% as.vector %>% sort 
+A$cut2_4_7 = g
+```
+
+```{r}
+save(A, file="./cut_A.rdata")
+save(X, file="./X.rdata")
+save(Z, file="./Z.rdata")
 ```
 
