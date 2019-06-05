@@ -23,7 +23,7 @@ Z$age = factor(Z$age, levels=c(
   "<25","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64",">65","na"), labels=c(
   "a20","a25","a30","a35","a40","a45","a50","a55","a60","a65","na"
   )) %>% as.character
-Z$area = paste0("z",Z$area)
+# Z$area = paste0("z",Z$area)
 summary(Z)
 ```
 
@@ -56,5 +56,51 @@ X = Z %>% group_by(tid) %>% summarise(
   gross = sum(price - cost)   # 毛利
   ) %>% data.frame
 nrow(X) # 119422 
+```
+
+```{r}
+# 處理離群值
+# Check Quantile & Remove Outliers
+sapply(X[,6:9], quantile, prob=c(.999, .9995, .9999))
+# Remove Outliers
+X = subset(X, items<=62 & pieces<95 & total<16000) # 119328
+```
+
+```{r}
+# 產生客戶屬性的資料
+# 一個客戶這4個月在這間店消費的屬性
+d0 = max(X$date) + 1
+A = X %>% mutate(
+  days = as.integer(difftime(d0, date, units="days"))
+  ) %>% 
+  group_by(cust) %>% summarise(
+    r = min(days),      # recency 最近一次距今購買天數
+    s = max(days),      # seniority 第一次距今購買天數
+    f = n(),            # frquency 總共買幾次
+    m = mean(total),    # monetary 平均購買金額
+    rev = sum(total),   # total revenue contribution 總收益
+    raw = sum(gross),   # total gross profit contribution 總毛利
+    age = age[1],       # age group 年齡
+    area = area[1],     # area code 地區
+  )     # 33241
+nrow(A)
+```
+
+```{r}
+hc = A[,2:7] %>% scale(center = F) %>% dist %>% hclust
+plot(hc)
+k =6
+rect.hclust(hc, k=k, border="red")
+```
+
+```{r}
+hc = A[,2:7] %>% scale(center = F) %>% dist %>% hclust
+plot(hc)
+k =6
+rect.hclust(hc, k=k, border="red")
+```
+```{r}
+g = cutree(hc,k=k)
+table(g) %>% as.vector %>% sort 
 ```
 
