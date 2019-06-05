@@ -42,3 +42,19 @@ Z$tid = group_indices(Z, date, cust) # same customer same day
 sapply(Z[c("cust","cat","prod","tid")], n_distinct)
 ```
 
+```{r}
+# 整理交易資料成單一資料
+#因爲同一個顧客購買兩個商品會是兩筆明細
+X = Z %>% group_by(tid) %>% summarise(
+  date = date[1],             # 交易日期  
+  cust = cust[1],             # 顧客 ID
+  age = age[1],               # 顧客 年齡級別
+  area = area[1],             # 顧客 居住區別
+  items = n(),                # 交易項目(總)數
+  pieces = sum(qty),          # 產品(總)件數
+  total = sum(price),         # 交易(總)金額
+  gross = sum(price - cost)   # 毛利
+  ) %>% data.frame
+nrow(X) # 119422 
+```
+
