@@ -18,23 +18,24 @@ A %>% group_by(cut2_5_7) %>% summarise(
     s = mean(s),      # seniority 第一次距今購買天數
     f = n(),            # frquency 總共買幾次    
     m = mean(m),       # monetary 平均購買金額
-    rev = mean(rev),   # total revenue contribution 總收益
-    raw = mean(raw)   # total gross profit contribution 總毛利
+    rev = mean(rev),   # mean total revenue contribution 平均總收益
+    raw = mean(raw)   # total gross profit contribution 平均總毛利
   )     # 33241
 ```
+第一群人常常來買東西，但是平均購買金額偏低、為公司帶來的收益也不高。不過值得慶幸的是，他們經常來買東西，而且也算是忠實顧客(很久以前就成為顧客了，購買頻率相較其他族群也比較高)
+
+因此，我們在這邊可以假設他是附近的住戶，經常來這家雜貨店購買日用品等小額物資，但又需要常常來購買。
 
 
 ```{r}
-B = A %>% filter(cut2_5_7== 1)
-ggplot(A, aes(r,f)) +
+#B = A %>% filter(cut2_5_7== 1)
+ggplot(A, aes(f,log(m))) + #頻率與價格
   geom_point()+
   facet_grid(~cut2_5_7)
 ```
 
-
 ```{r}
-temp = A %>% filter(cut2_5_7 == 1) 
-temp = temp[,-11]
-summary(temp)
+ggplot(A, aes())
 ```
+
 
