@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(dplyr)
+library(ggplot2)
 ```
 
 ```{r}
@@ -18,10 +19,16 @@ A %>% group_by(cut2_5_7) %>% summarise(
     f = n(),            # frquency 總共買幾次    
     m = mean(m),       # monetary 平均購買金額
     rev = mean(rev),   # total revenue contribution 總收益
-    raw = mean(raw),   # total gross profit contribution 總毛利
-    age = age[1],       # age group 年齡
-    area = area[1],     # area code 地區
+    raw = mean(raw)   # total gross profit contribution 總毛利
   )     # 33241
+```
+
+
+```{r}
+B = A %>% filter(cut2_5_7== 1)
+ggplot(A, aes(r,f)) +
+  geom_point()+
+  facet_grid(~cut2_5_7)
 ```
 
 
