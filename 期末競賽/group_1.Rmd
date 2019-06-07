@@ -1,0 +1,27 @@
+---
+title: "Untitled"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+A %>% group_by(cut2_5_7) %>% summarize(
+  avgr = mean(r),
+  
+)
+```
+
+
+```{r}
+temp = A %>% filter(cut2_5_7 == 1) 
+temp = temp[,-11]
+summary(temp)
+```
+
