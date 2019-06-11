@@ -1,8 +1,12 @@
 ---
 title: "期末資料探索"
 author: "第18組"
-date: "2019/6/5"
-output: html_document
+date: "`r Sys.time()`"
+output: 
+  html_document:
+    highlight: pygments
+    theme: flatly
+    css: style.css
 ---
 
 ```{r setup, include=FALSE}
@@ -19,77 +23,77 @@ pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr)
 
 ```{r}
 # 資料匯入與清洗
-Z = read_csv("./ta_feng_all_months_merged.csv") %>%
-  setNames(c("date","cust","age","area","cat","prod","qty","cost","price"))
-Z$date = as.Date(Z$date, format="%m/%d/%Y")
-Z$age[is.na(Z$age)] = "na"
-Z$age = factor(Z$age, levels=c(
-  "<25","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64",">65","na"), labels=c(
-  "a20","a25","a30","a35","a40","a45","a50","a55","a60","a65","na"
-  )) %>% as.character
-# Z$area = paste0("z",Z$area)
-summary(Z)
+# Z = read_csv("./ta_feng_all_months_merged.csv") %>%
+#   setNames(c("date","cust","age","area","cat","prod","qty","cost","price"))
+# Z$date = as.Date(Z$date, format="%m/%d/%Y")
+# Z$age[is.na(Z$age)] = "na"
+# Z$age = factor(Z$age, levels=c(
+#   "<25","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64",">65","na"), labels=c(
+#   "a20","a25","a30","a35","a40","a45","a50","a55","a60","a65","na"
+#   )) %>% as.character
+# # Z$area = paste0("z",Z$area)
+# summary(Z)
 ```
 
 ```{r}
 # 去除離群值
 # Quantile of Variables
-sapply(Z[,7:9], quantile, prob=c(.99, .999, .9995))
-# Remove Outliers
-Z = subset(Z, qty<=24 & cost<=3800 & price<=4000) 
-nrow(Z)
-Z$tid = group_indices(Z, date, cust) # same customer same day
+# sapply(Z[,7:9], quantile, prob=c(.99, .999, .9995))
+# # Remove Outliers
+# Z = subset(Z, qty<=24 & cost<=3800 & price<=4000) 
+# nrow(Z)
+# Z$tid = group_indices(Z, date, cust) # same customer same day
 ```
 
 ```{r}
 # 計算不重復變數的數量
 # No. cust, cat, prod, tid
-sapply(Z[c("cust","cat","prod","tid")], n_distinct)
+# sapply(Z[c("cust","cat","prod","tid")], n_distinct)
 ```
 
 ```{r}
 # 整理交易資料成單一資料
 # 因爲同一個顧客購買兩個商品會是兩筆明細
-X = Z %>% group_by(tid) %>% summarise(
-  date = date[1],             # 交易日期  
-  cust = cust[1],             # 顧客 ID
-  age = age[1],               # 顧客 年齡級別
-  area = area[1],             # 顧客 居住區別
-  items = n(),                # 交易項目(總)數
-  pieces = sum(qty),          # 產品(總)件數
-  total = sum(price),         # 交易(總)金額
-  gross = sum(price - cost)   # 毛利
-  ) %>% data.frame
-nrow(X) # 119422 
+# X = Z %>% group_by(tid) %>% summarise(
+#   date = date[1],             # 交易日期  
+#   cust = cust[1],             # 顧客 ID
+#   age = age[1],               # 顧客 年齡級別
+#   area = area[1],             # 顧客 居住區別
+#   items = n(),                # 交易項目(總)數
+#   pieces = sum(qty),          # 產品(總)件數
+#   total = sum(price),         # 交易(總)金額
+#   gross = sum(price - cost)   # 毛利
+#   ) %>% data.frame
+# nrow(X) # 119422 
 ```
 
 
 ```{r}
 # 去除離群值
 # Check Quantile & Remove Outliers
-sapply(X[,6:9], quantile, prob=c(.999, .9995, .9999))
-# Remove Outliers
-X = subset(X, items<=62 & pieces<95 & total<16000) # 119328
+# sapply(X[,6:9], quantile, prob=c(.999, .9995, .9999))
+# # Remove Outliers
+# X = subset(X, items<=62 & pieces<95 & total<16000) # 119328
 ```
 
 ```{r}
 # 產生客戶屬性的資料
 # 一個客戶這4個月在這間店消費的屬性
-d0 = max(X$date) + 1 # 2001-03-01
-A = X %>% mutate(
-  days = as.integer(difftime(d0, date, units="days"))
-  ) %>% 
-  group_by(cust) %>% summarise(
-    r = min(days),      # recency 最近一次距今購買天數
-    s = max(days),      # seniority 第一次距今購買天數
-    f = n(),            # frquency 總共買幾次
-    m = mean(total),    # monetary 平均購買金額
-    rev = sum(total),   # total revenue contribution 總收益
-    raw = sum(gross),   # total gross profit contribution 總毛利
-    age = age[1],       # age group 年齡
-    area = area[1],     # area code 地區
-  )     # 33241
-nrow(A)
+# d0 = max(X$date) + 1 # 2001-03-01
+# A = X %>% mutate(
+#   days = as.integer(difftime(d0, date, units="days"))
+#   ) %>% 
+#   group_by(cust) %>% summarise(
+#     r = min(days),      # recency 最近一次距今購買天數
+#     s = max(days),      # seniority 第一次距今購買天數
+#     f = n(),            # frquency 總共買幾次
+#     m = mean(total),    # monetary 平均購買金額
+#     rev = sum(total),   # total revenue contribution 總收益
+#     raw = sum(gross),   # total gross profit contribution 總毛利
+#     age = age[1],       # age group 年齡
+#     area = area[1],     # area code 地區
+#   )     # 33241
+# nrow(A)
 ```
 
 ```{r}
@@ -102,11 +106,15 @@ nrow(A)
 # A$cut2_4_7 = g
 ```
 
-
+####可以先讀入三個已經整理好並分群的資料框做####
 ```{r}
 # save(A, file="./cut_A.rdata")
 # save(X, file="./X.rdata")
 # save(Z, file="./Z.rdata")
+
+load("./cut_A.rdata")
+load("./X.rdata")
+load("./Z.rdata")
 ```
 
 
@@ -226,19 +234,107 @@ c(r2.tr, r2.ts)
 這些地區可以表示成未來可以加強行銷重點
 ```{r} 
 # 顯示各地區平均購買的金額
-tapply(A_feb$total, A_feb$area, mean) %>% barplot(las=2)
-abline(h = mean(training_data$total), col='red')
+tapply(A_feb$rev, A_feb$area, mean) %>% barplot(las=2)
+abline(h = mean(A_feb$rev), col='red')
 ```
 
 
 可以了解資料中的分群中都買什麼東西，
-與其他兩個群組有無重複
+與其他兩個群組有無重複（有重複！）
 如果有，可以進行假設商品，並擬定行銷計畫
 把群組都當作目標客群
 ```{r}
 # 整理商品資料成一筆
-P = Z %>% group_by(prod) %>% summarise(
-  n = n())
-nrow(X)
+mix = merge(Z,A[,c(1,11)],by="cust")
+
+P = mix %>% group_by(cut2_4_7,prod) %>% summarise(
+  num = n(),
+  price = price[1]/qty[1]
+) %>% top_n(n = 10,wt = num)
+# P$prod = factor(P$prod)
+# levels(P$prod) = 1:27
+# P$prod
+```
+
+
+```{r}
+library(reshape2)
+library(d3heatmap)
+
+dtm = dcast(P,formula = cut2_4_7~prod,value.var = "price")
+row.names(dtm) = dtm$cut2_4_7
+termDocMatrix = as.matrix(dtm[,-1])
+termDocMatrix[is.na(termDocMatrix)] = 0
+d3heatmap(termDocMatrix,colors = "Blues")
+
+# 取log後的結果
+termDocMatrix = log(termDocMatrix)
+termDocMatrix[termDocMatrix == -Inf] = 0
+d3heatmap(termDocMatrix,colors = "Greens")
+```
+了解分群顧客有哪些特性
+第2群顧客最近剛消費過
+且算是本店的首次購買的顧客居多
+頻率雖然不高
+```{r}
+A$logm = log(A$m)
+par(cex = 0.9)
+par(family="黑體-繁 中黑")
+
+A[,c(2:4,12)] %>% scale %>% as.data.frame %>%  split(.,A$cut2_4_7) %>% sapply(colMeans) %>% 
+  barplot(beside=T, col=rainbow(4))
+legend("bottomright", c("最近一次消費距今", "第一次購買日期距今", "購買頻率","平均購買金額"),fill=rainbow(4),cex=0.8)
+```
+
+第2群顧客奇怪的是購買商品數量較雜
+購買商品種類繁多，但是都沒有一定的趨勢
+
+```{r}
+mix %>% filter(cut2_4_7==2) %>% group_by(prod) %>% summarise(n = n()) %>% arrange(desc(n))
+```
+
+
+```{r}
+group_by(A, cut2_4_7) %>% summarise(
+  recent=mean(r), 
+  freq=mean(f), 
+  money=mean(m), 
+  size=n() ) %>% 
+  mutate( revenue = size*money/1000 )  %>% 
+  filter(size > 1) %>% 
+  ggplot(aes(x=freq, y=money)) +
+  geom_point(aes(size=revenue, col=recent),alpha=0.5) +
+  scale_size(range=c(4,20)) +
+  scale_color_gradient(low="green",high="red") +
+  scale_x_log10() + scale_y_log10() + 
+  geom_text(aes(label = size ),size=3) +
+  theme_bw() + guides(size=F) +
+  labs(title="Customer Segements",
+       subtitle="(bubble_size:revenue_contribution; text:group_size)",
+       color="Recency") +
+  xlab("Frequency (log)") + ylab("Average Transaction Amount (log)")
+```
+
+畫出顧客分群
+
+```{r}
+group_by(A, cut2_4_7) %>% summarise(
+  recent=mean(r), 
+  freq=mean(f), 
+  money=mean(m), 
+  size=n() ) %>% 
+  mutate( revenue = size*money/1000 )  %>% 
+  filter(size > 1) %>% 
+  ggplot(aes(x=freq, y=money)) +
+  geom_point(aes(size=revenue, col=recent),alpha=0.5) +
+  scale_size(range=c(4,20)) +
+  scale_color_gradient(low="green",high="red") +
+  scale_x_log10() + scale_y_log10() + 
+  geom_text(aes(label = cut2_4_7 ),size=3) +
+  theme_bw() + guides(size=F) +
+  labs(title="Customer Segements",
+       subtitle="(bubble_size:revenue_contribution; text:group_size)",
+       color="Recency") +
+  xlab("Frequency (log)") + ylab("Average Transaction Amount (log)")
 ```
 
