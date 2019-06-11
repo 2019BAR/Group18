@@ -12,9 +12,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(readr)
 library(dplyr)
+pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr)
 ```
 
+
+
 ```{r}
+# 資料匯入與清洗
 Z = read_csv("./ta_feng_all_months_merged.csv") %>%
   setNames(c("date","cust","age","area","cat","prod","qty","cost","price"))
 Z$date = as.Date(Z$date, format="%m/%d/%Y")
@@ -28,6 +32,7 @@ summary(Z)
 ```
 
 ```{r}
+# 去除離群值
 # Quantile of Variables
 sapply(Z[,7:9], quantile, prob=c(.99, .999, .9995))
 # Remove Outliers
@@ -37,14 +42,14 @@ Z$tid = group_indices(Z, date, cust) # same customer same day
 ```
 
 ```{r}
-# 計算數量
+# 計算不重復變數的數量
 # No. cust, cat, prod, tid
 sapply(Z[c("cust","cat","prod","tid")], n_distinct)
 ```
 
 ```{r}
 # 整理交易資料成單一資料
-#因爲同一個顧客購買兩個商品會是兩筆明細
+# 因爲同一個顧客購買兩個商品會是兩筆明細
 X = Z %>% group_by(tid) %>% summarise(
   date = date[1],             # 交易日期  
   cust = cust[1],             # 顧客 ID
@@ -58,8 +63,9 @@ X = Z %>% group_by(tid) %>% summarise(
 nrow(X) # 119422 
 ```
 
+
 ```{r}
-# 處理離群值
+# 去除離群值
 # Check Quantile & Remove Outliers
 sapply(X[,6:9], quantile, prob=c(.999, .9995, .9999))
 # Remove Outliers
@@ -69,7 +75,7 @@ X = subset(X, items<=62 & pieces<95 & total<16000) # 119328
 ```{r}
 # 產生客戶屬性的資料
 # 一個客戶這4個月在這間店消費的屬性
-d0 = max(X$date) + 1
+d0 = max(X$date) + 1 # 2001-03-01
 A = X %>% mutate(
   days = as.integer(difftime(d0, date, units="days"))
   ) %>% 
@@ -87,21 +93,152 @@ nrow(A)
 ```
 
 ```{r}
-hc = A[,2:4]  %>% dist %>% hclust(method = "ward.D2")
-plot(hc)
-k =7
-rect.hclust(hc, k=k, border="red")
+# 進行客戶分群，使用預設歐式距離，使用ward法
+# hc = A[,2:4]  %>% dist %>% hclust(method = "ward.D2")
+# plot(hc)
+# k =7
+# rect.hclust(hc, k=k, border="red")
+# g = cutree(hc,k=k)
+# A$cut2_4_7 = g
+```
+
+
+```{r}
+# save(A, file="./cut_A.rdata")
+# save(X, file="./X.rdata")
+# save(Z, file="./Z.rdata")
+```
+
+
+
+
+A 為整理後的客戶來店頻率與平均購買金額等
+A_feb 為整理後的客戶來店頻率與平均購買金額且時間在二月之前
+Z 為整理原始資料X得到的訂單資料（一個客戶一天一筆）
+X 為原始資料，經過去除離群值
+X_feb 為原始資料，經過去除離群值且時間在二月之前
+```{r}
+
+# 利用原始資料分割成2月之前與
+feb01 = as.Date("2001-02-01")
+X_feb = subset(X, date < feb01)    # 618212
+nrow(X_feb) # 617316
+
+# 二月份有購買的資料
+feb = filter(X, date>= feb01) %>% group_by(cust) %>% 
+  summarise(amount = sum(total))
 
 ```
 
+利用分割後的資料X_feb，計算這三個月有購買的客戶資料
 ```{r}
-g = cutree(hc,k=k)
-A$cut2_4_7 = g
+d0 = max(X_feb$date) + 1 # 2001-02-01
+A_feb = X_feb %>% mutate(
+  days = as.integer(difftime(d0, date, units="days"))
+  ) %>% 
+  group_by(cust) %>% summarise(
+    r = min(days),      # recency
+    s = max(days),      # seniority
+    f = n(),            # frquency
+    m = mean(total),    # monetary
+    rev = sum(total),   # total revenue contribution
+    raw = sum(gross),   # total gross profit contribution
+    age = age[1],       # age group
+    area = area[1],     # area code
+  ) %>% data.frame      # 28584
+nrow(A_feb)
 ```
 
 ```{r}
-save(A, file="./cut_A.rdata")
-save(X, file="./X.rdata")
-save(Z, file="./Z.rdata")
+
+# 標記有購買的客戶，並且提供二月份購買的金額
+A_feb = merge(A_feb, feb, by="cust", all.x=T)
+
+A_feb$buy = !is.na(A_feb$amount)
+
+# 覆蓋原始資料Ｘ,Z
+# 注意現在資料都是2月之前的資料，非全部4個月的資料
+
+X = subset(X, cust %in% A_feb$cust & date < as.Date("2001-02-01"))
+Z = subset(Z, cust %in% A_feb$cust & date < as.Date("2001-02-01"))
+set.seed(2018); spl = sample.split(A_feb$buy, SplitRatio=0.7)
+c(nrow(A_feb), sum(spl), sum(!spl))
+
+## [1] 28584 20008  8576
+```
+
+```{r}
+A2 = subset(A_feb, buy) %>% mutate_at(c("m","rev","amount"), log10)
+n = nrow(A2)
+set.seed(2018); spl2 = 1:n %in% sample(1:n, round(0.7*n))
+c(nrow(A2), sum(spl2), sum(!spl2))
+## [1] 13243  9270  3973
+```
+
+### 建立模型
+
+預測下個月（2月份）是否購買的機率
+```{r}
+# 分割train與test
+TR = subset(A_feb, spl)
+TS = subset(A_feb, !spl)
+```
+
+```{r}
+# 利用2:9的欄位來進行預測變數
+# TR[,c(2:9, 11)] 指使用這些資料進行預測
+# buy ~ .實際上就是使用TR[,2:9]的資料來預測TR[,11]
+glm1 = glm(buy ~ ., TR[,c(2:9, 11)], family="binomial") 
+summary(glm1)
+# 建立預測模型後利用test 資料進行預測，並取得機率
+pred =  predict(glm1, TS, type="response")
+# 建立混淆矩陣，觀察auc
+cm = table(actual = TS$buy, predict = pred > 0.5); cm
+acc.ts = cm %>% {sum(diag(.))/sum(.)}; acc.ts          # 0.69998
+colAUC(pred, TS$buy)   
+```
+
+- 預測下個月購買的金額
+
+A2 為A_feb的與金額相關的資料取log後的結果
+```{r}
+TR2 = subset(A2, spl2)
+TS2 = subset(A2, !spl2)
+```
+
+```{r}
+# 利用2:6,8:10的欄位來進行預測變數
+# TR2[,c(2:6,8:10)] 指使用這些資料進行預測
+# amount ~ .實際上就是使用TR[,2:6,8:9]的資料來預測TR[,10]
+lm1 = lm(amount ~ ., TR2[,c(2:6,8:10)])
+summary(lm1)
+```
+誤差計算
+```{r}
+r2.tr = summary(lm1)$r.sq
+SST = sum((TS2$amount - mean(TR2$amount))^ 2)
+SSE = sum((predict(lm1, TS2) -  TS2$amount)^2)
+r2.ts = 1 - (SSE/SST)
+c(r2.tr, r2.ts)
+```
+
+
+這些地區可以表示成未來可以加強行銷重點
+```{r} 
+# 顯示各地區平均購買的金額
+tapply(A_feb$total, A_feb$area, mean) %>% barplot(las=2)
+abline(h = mean(training_data$total), col='red')
+```
+
+
+可以了解資料中的分群中都買什麼東西，
+與其他兩個群組有無重複
+如果有，可以進行假設商品，並擬定行銷計畫
+把群組都當作目標客群
+```{r}
+# 整理商品資料成一筆
+P = Z %>% group_by(prod) %>% summarise(
+  n = n())
+nrow(X)
 ```
 
