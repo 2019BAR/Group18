@@ -10,6 +10,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(dplyr)
 library(ggplot2)
+library(caTools)
+library(ROCR)
+library(googleVis)
+load("./cut_A.rdata")
+load("./X.rdata")
+load("./Z.rdata")
 ```
 
 ```{r}
@@ -35,9 +41,9 @@ temp = A %>% group_by(cut2_4_7) %>% summarise(
 
 ===
 
-第一群人是所有的顧客群中的老客戶，同時相較於其他的顧客也很常來店裡消費，更棒的是，他們最近不但也都有持續的來購物。整體的平均購買金額更居客戶群數一數二、位公司帶來的總收益也極高客戶群中排名第二。
+第一群人是所有的顧客群中的老客戶，同時相較於其他的顧客也很常來店裡消費，更棒的是，他們最近不但也都有持續的來購物。整體的平均購買金額更居客戶群數一數二、為公司帶來的總收益也極高客戶群中排名第二。
 
-
+因此，我們建議針對該群客戶
 
 
 ```{r}
@@ -53,4 +59,99 @@ ggplot(temp, aes(f,log(m),col=as.factor(cut2_4_7),size=rev)) + #頻率與價格
 #summary(L)
 ```
 
+```{r}
+temp2 = merge(Z,A[,c(1,11)], by="cust")
+```
+
+
+```{r}
+Y = list()
+
+D1 = as.Date(paste0("2000-","11","-1"))
+D12 = as.Date(paste0("2000-","11","-30"))
+Y[[paste0("Y",D1)]] = temp2 %>%
+  filter(date <= D12) %>%
+  mutate(days = 1 + as.integer(D1-date)) %>%
+  group_by(cust) %>% summarise(
+    recent = min(days),           #   最後一次購買距期末天數   
+      freq = n(),                   #   購買次數 (至期末為止)   
+      money = mean(price),         #   平均購買金額 (至期末為止)
+      senior = max(days),           #   第一次購買距期末天數
+      status = cut2_4_7[1],  # 期末狀態
+      since = min(date),                      # 第一次購買日期
+      y_freq = sum(date > D1),              # 當期購買次數
+      y_revenue = sum(price[date > D1])    # 當期購買金額
+  ) %>% data.frame
+
+D2 =  as.Date(paste0("2000-","12","-1"))
+D22 =  as.Date(paste0("2000-","12","-31"))
+Y[[paste0("Y",D2)]] = temp2 %>%
+  filter(date <= D22) %>%
+  mutate(days = 1 + as.integer(D2-date)) %>%
+  group_by(cust) %>% summarise(
+    recent = min(days),           #   最後一次購買距期末天數   
+      freq = n(),                   #   購買次數 (至期末為止)   
+      money = mean(price),         #   平均購買金額 (至期末為止)
+      senior = max(days),           #   第一次購買距期末天數
+      status = cut2_4_7[1],  # 期末狀態
+      since = min(date),                      # 第一次購買日期
+      y_freq = sum(date > D2),              # 當期購買次數
+      y_revenue = sum(price[date > D2])    # 當期購買金額
+  ) %>% data.frame
+
+D3 =  as.Date(paste0("2001-","1","-1"))
+D32 = as.Date(paste0("2001-","1","-31"))
+Y[[paste0("Y",D3)]] = temp2 %>%
+  filter(date <= D32) %>%
+  mutate(days = 1 + as.integer(D3-date)) %>%
+  group_by(cust) %>% summarise(
+    recent = min(days),           #   最後一次購買距期末天數   
+      freq = n(),                   #   購買次數 (至期末為止)   
+      money = mean(price),         #   平均購買金額 (至期末為止)
+      senior = max(days),           #   第一次購買距期末天數
+      status = cut2_4_7[1],  # 期末狀態
+      since = min(date),                      # 第一次購買日期
+      y_freq = sum(date > D3),              # 當期購買次數
+      y_revenue = sum(price[date > D3])    # 當期購買金額
+  ) %>% data.frame
+
+D4 =  as.Date(paste0("2001-","2","-1"))
+D42 = as.Date(paste0("2001-","2","-28"))
+Y[[paste0("Y",D4)]] = temp2 %>%
+  filter(date <= D42) %>%
+  mutate(days = 1 + as.integer(D4-date)) %>%
+  group_by(cust) %>% summarise(
+    recent = min(days),           #   最後一次購買距期末天數   
+      freq = n(),                   #   購買次數 (至期末為止)   
+      money = mean(price),         #   平均購買金額 (至期末為止)
+      senior = max(days),           #   第一次購買距期末天數
+      status = cut2_4_7[1],  # 期末狀態
+      since = min(date),                      # 第一次購買日期
+      y_freq = sum(date >= D4),              # 當期購買次數
+      y_revenue = sum(price[date >= D4])    # 當期購買金額
+  ) %>% data.frame
+```
+
+```{r}
+CustSegments = do.call(rbind, lapply(Y, function(d) {
+  group_by(d, status) %>% summarise(
+    average_frequency = mean(freq),
+    average_amount = mean(money),
+    total_revenue = sum(y_revenue),
+    total_no_orders = sum(y_freq),
+    average_recency = mean(recent),
+    average_seniority = mean(senior),
+    group_size = n()
+  )})) %>% ungroup %>% mutate(DD=c(D1,D1,D1,D1,D1,D1,D2,D2,D2,D2,D2,D2,D2,D3,D3,D3,D3,D3,D3,D3,D4,D4,D4,D4,D4,D4,D4)) %>% data.frame
+head(CustSegments)
+```
+%>% 
+  mutate(year=rep(2010:2015, each=7))
+
+```{r}
+m1 = gvisMotionChart(
+  CustSegments, "status", "DD",
+  options=list(width=720, height=480) )
+plot(m1)
+```
 
