@@ -14,8 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-library(readr)
-library(dplyr)
 pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr)
 ```
 
@@ -336,5 +334,36 @@ group_by(A, cut2_4_7) %>% summarise(
        subtitle="(bubble_size:revenue_contribution; text:group_size)",
        color="Recency") +
   xlab("Frequency (log)") + ylab("Average Transaction Amount (log)")
+```
+
+```{r}
+mix = merge(Z,A[,c(1,11)],by = "cust")
+mix$weeks = format(mix$date,"%u")
+group_by(mix,cut2_4_7,weeks) %>% 
+  summarise(count = n()) %>%
+  group_by(cut2_4_7) %>% 
+  mutate(sum = sum(count),ratio = count/sum) %>% 
+  ggplot(aes(x=as.factor(cut2_4_7),y = ratio,fill = weeks)) + geom_bar(stat = "identity")
+
+```
+
+了解客戶這4個月最常來的星期
+並且計算顧客所屬群組的常去星期幾買東西的總和
+```{r}
+A_often_come = group_by(mix,cust,weeks) %>% 
+  summarise(
+    count = n(),
+    label = cut2_4_7[1]
+  ) %>% group_by(cust) %>% top_n(1,wt = count)
+
+table(A_often_come$weeks,A_often_come$label) %>% as.data.frame.matrix() %>% d3heatmap::d3heatmap(colors = "Greens")
+```
+
+2001-01-21除夕的前一天，那天的購買次數是這４個月最高的
+
+```{r}
+X %>% group_by(date) %>% summarise(
+  count = n()
+) %>% arrange(desc(count)) 
 ```
 
