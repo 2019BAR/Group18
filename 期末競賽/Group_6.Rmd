@@ -1,0 +1,55 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+summary(cut2_4_7)
+```
+
+
+```{r}
+A %>% group_by(cut2_4_7) %>% summarise(
+    r = mean(r),      # recency 最近一次距今購買天數
+    s = mean(s),      # seniority 第一次距今購買天數
+    f = n(),            # frquency 總共買幾次    
+    m = mean(m),       # monetary 平均購買金額
+    rev = mean(rev),   # mean total revenue contribution 平均總收益
+    raw = mean(raw)   # total gross profit contribution 平均總毛利
+  )     
+```
+
+
+
+第六群人分析:
+屬於新顧客族群，雖然不常來消費，但是平均購買金額很高，然而為公司帶來的收益卻不高，可能不能成為公司的長期的潛在消費者。
+
+因此可以假設其為主要來店裡購買大型家具或電器用品的客戶，不常來購買，但一次會花費大筆金額。對於這類消費者，我們可以採取以下行銷方法:
+1.針對大型家具或電器用品的周邊商品做促銷方案，吸引顧客多加消費
+2.與信用卡合作設計刷卡滿額送來店禮等優惠
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
