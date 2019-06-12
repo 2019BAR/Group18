@@ -13,10 +13,11 @@ library(ggplot2)
 ```
 
 ```{r}
-A %>% group_by(cut2_5_7) %>% summarise(
+temp = A %>% group_by(cut2_4_7) %>% summarise(
     r = mean(r),      # recency 最近一次距今購買天數
     s = mean(s),      # seniority 第一次距今購買天數
-    f = n(),            # frquency 總共買幾次    
+    n = n(),            # 該群裡面總共有多少客戶
+    f = mean(f),
     m = mean(m),       # monetary 平均購買金額
     rev = mean(rev),   # mean total revenue contribution 平均總收益
     raw = mean(raw)   # total gross profit contribution 平均總毛利
@@ -31,11 +32,18 @@ A %>% group_by(cut2_5_7) %>% summarise(
 2.提供滿額優惠，促使消費者願意增加單次購買金額
 3.增加日用品類的商品種類，從而發掘顧客可能有興趣的產品，加以推廣。
 
+
+===
+
+第一群人是所有的顧客群中的老客戶，同時相較於其他的顧客也很常來店裡消費，更棒的是，他們最近不但也都有持續的來購物。整體的平均購買金額更居客戶群數一數二、位公司帶來的總收益也極高客戶群中排名第二。
+
+
+
+
 ```{r}
-#B = A %>% filter(cut2_5_7== 1)
-ggplot(A, aes(f,log(m))) + #頻率與價格
-  geom_point()+
-  facet_grid(~cut2_5_7)
+
+ggplot(temp, aes(f,log(m),col=as.factor(cut2_4_7),size=rev)) + #頻率與價格
+  geom_point()
 
 ```
 
