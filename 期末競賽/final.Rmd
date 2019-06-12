@@ -80,7 +80,7 @@ pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr)
 # d0 = max(X$date) + 1 # 2001-03-01
 # A = X %>% mutate(
 #   days = as.integer(difftime(d0, date, units="days"))
-#   ) %>% 
+#   ) %>%
 #   group_by(cust) %>% summarise(
 #     r = min(days),      # recency 最近一次距今購買天數
 #     s = max(days),      # seniority 第一次距今購買天數
@@ -95,7 +95,7 @@ pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr)
 ```
 
 ```{r}
-# 進行客戶分群，使用預設歐式距離，使用ward法
+#進行客戶分群，使用預設歐式距離，使用ward法
 # hc = A[,2:4]  %>% dist %>% hclust(method = "ward.D2")
 # plot(hc)
 # k =7
@@ -106,13 +106,15 @@ pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr)
 
 ####可以先讀入三個已經整理好並分群的資料框做####
 ```{r}
-# save(A, file="./cut_A.rdata")
+save(A, file="./cut_A.rdata")
 # save(X, file="./X.rdata")
 # save(Z, file="./Z.rdata")
 
 load("./cut_A.rdata")
 load("./X.rdata")
 load("./Z.rdata")
+set.seed(1111)
+A$keams = kmeans(scale(A[,2:7]),5)$cluster
 ```
 
 
@@ -228,6 +230,34 @@ r2.ts = 1 - (SSE/SST)
 c(r2.tr, r2.ts)
 ```
 
+#### 預測模型
+
+```{r}
+load("./X.rdata")
+d0 = max(X$date) + 1
+B = X %>% 
+  filter(date >= as.Date("2000-12-01")) %>% 
+  mutate(days = as.integer(difftime(d0, date, units="days"))) %>% 
+  group_by(cust) %>% summarise(
+    r = min(days),      # recency
+    s = max(days),      # seniority
+    f = n(),            # frquency
+    m = mean(total),    # monetary
+    rev = sum(total),   # total revenue contribution
+    raw = sum(gross),   # total gross profit contribution
+    age = age[1],       # age group
+    area = area[1],     # area code
+  ) %>% data.frame      # 28584
+nrow(B)
+```
+
+```{r}
+B$Buy = predict(glm1, B, type="response")
+
+B2 = B %>% mutate_at(c("m","rev"), log10)
+B$Rev = 10^predict(lm1, B2)
+```
+
 
 這些地區可以表示成未來可以加強行銷重點
 ```{r} 
@@ -279,7 +309,7 @@ A$logm = log(A$m)
 par(cex = 0.9)
 par(family="黑體-繁 中黑")
 
-A[,c(2:4,12)] %>% scale %>% as.data.frame %>%  split(.,A$cut2_4_7) %>% sapply(colMeans) %>% 
+A[,c(2:5)] %>% scale %>% as.data.frame %>%  split(.,A$keams) %>% sapply(colMeans) %>% 
   barplot(beside=T, col=rainbow(4))
 legend("bottomright", c("最近一次消費距今", "第一次購買日期距今", "購買頻率","平均購買金額"),fill=rainbow(4),cex=0.8)
 ```
@@ -293,7 +323,7 @@ mix %>% filter(cut2_4_7==2) %>% group_by(prod) %>% summarise(n = n()) %>% arrang
 
 
 ```{r}
-group_by(A, cut2_4_7) %>% summarise(
+group_by(A, keams) %>% summarise(
   recent=mean(r), 
   freq=mean(f), 
   money=mean(m), 
@@ -316,7 +346,7 @@ group_by(A, cut2_4_7) %>% summarise(
 畫出顧客分群
 
 ```{r}
-group_by(A, cut2_4_7) %>% summarise(
+group_by(A, keams) %>% summarise(
   recent=mean(r), 
   freq=mean(f), 
   money=mean(m), 
@@ -328,7 +358,7 @@ group_by(A, cut2_4_7) %>% summarise(
   scale_size(range=c(4,20)) +
   scale_color_gradient(low="green",high="red") +
   scale_x_log10() + scale_y_log10() + 
-  geom_text(aes(label = cut2_4_7 ),size=3) +
+  geom_text(aes(label = keams ),size=3) +
   theme_bw() + guides(size=F) +
   labs(title="Customer Segements",
        subtitle="(bubble_size:revenue_contribution; text:group_size)",
