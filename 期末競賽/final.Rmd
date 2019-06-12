@@ -113,8 +113,8 @@ save(A, file="./cut_A.rdata")
 load("./cut_A.rdata")
 load("./X.rdata")
 load("./Z.rdata")
-set.seed(1111)
-A$keams = kmeans(scale(A[,2:7]),5)$cluster
+# set.seed(1111)
+# A$keams = kmeans(scale(A[,2:7]),5)$cluster
 ```
 
 
