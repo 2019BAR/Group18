@@ -397,3 +397,8 @@ X %>% group_by(date) %>% summarise(
 ) %>% arrange(desc(count)) 
 ```
 
+```{r}
+temp3 = Z %>% group_by(prod) %>% summarise(s = sum(qty))
+arrange(temp3, s)
+```
+
