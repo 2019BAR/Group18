@@ -106,7 +106,7 @@ pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr)
 
 ####可以先讀入三個已經整理好並分群的資料框做####
 ```{r}
-save(A, file="./cut_A.rdata")
+# save(A, file="./cut_A.rdata")
 # save(X, file="./X.rdata")
 # save(Z, file="./Z.rdata")
 
@@ -166,9 +166,8 @@ A_feb$buy = !is.na(A_feb$amount)
 
 # 覆蓋原始資料Ｘ,Z
 # 注意現在資料都是2月之前的資料，非全部4個月的資料
-
-X = subset(X, cust %in% A_feb$cust & date < as.Date("2001-02-01"))
-Z = subset(Z, cust %in% A_feb$cust & date < as.Date("2001-02-01"))
+# X = subset(X, cust %in% A_feb$cust & date < as.Date("2001-02-01"))
+# Z = subset(Z, cust %in% A_feb$cust & date < as.Date("2001-02-01"))
 set.seed(2018); spl = sample.split(A_feb$buy, SplitRatio=0.7)
 c(nrow(A_feb), sum(spl), sum(!spl))
 
@@ -231,10 +230,11 @@ c(r2.tr, r2.ts)
 ```
 
 #### 預測模型
-
+重新讀取原本4個月的資料，進行模型預測
 ```{r}
 load("./X.rdata")
 d0 = max(X$date) + 1
+# 建立12月到2月的交易資料
 B = X %>% 
   filter(date >= as.Date("2000-12-01")) %>% 
   mutate(days = as.integer(difftime(d0, date, units="days"))) %>% 
@@ -252,10 +252,51 @@ nrow(B)
 ```
 
 ```{r}
+# 預測回購紀機率
 B$Buy = predict(glm1, B, type="response")
 
 B2 = B %>% mutate_at(c("m","rev"), log10)
+# 預測回購金額
 B$Rev = 10^predict(lm1, B2)
+```
+
+
+```{r}
+par(mfrow=c(1,2), cex=0.8)
+hist(B$Buy,main="ProbRetain", ylab="")
+hist(log(B$Rev,10),main="log(PredRevenue)", ylab="")
+```
+
+
+###計算顧客終生價值（CLV）
+```{r}
+g = 0.5   # (稅前)獲利率
+N = 5     # 期數 = 5
+d = 0.1   # 利率 = 10%
+B$CLV = g * B$Rev * rowSums(sapply(
+  0:N, function(i) (B$Buy/(1+d))^i ) )
+
+summary(B$CLV)
+```
+
+
+```{r}
+par(mar=c(2,2,3,1), cex=0.8)
+hist(log(B$CLV,10), xlab="", ylab="")
+```
+
+
+## 比較各族群的價值
+
+```{r}
+# 各族群的平均營收貢獻、保留機率、終生價值
+B = merge(B,A[,c(1,12)],by="cust")
+sapply(B[,10:12], tapply, B$keams, mean)
+```
+
+```{r}
+par(mar=c(3,3,4,2), cex=0.8)
+boxplot(log(CLV)~keams, B, main="CLV by Groups")
 ```
 
 
@@ -273,9 +314,9 @@ abline(h = mean(A_feb$rev), col='red')
 把群組都當作目標客群
 ```{r}
 # 整理商品資料成一筆
-mix = merge(Z,A[,c(1,11)],by="cust")
+mix = merge(Z,A[,c(1,11,12)],by="cust")
 
-P = mix %>% group_by(cut2_4_7,prod) %>% summarise(
+P = mix %>% group_by(keams,prod) %>% summarise(
   num = n(),
   price = price[1]/qty[1]
 ) %>% top_n(n = 10,wt = num)
@@ -289,8 +330,8 @@ P = mix %>% group_by(cut2_4_7,prod) %>% summarise(
 library(reshape2)
 library(d3heatmap)
 
-dtm = dcast(P,formula = cut2_4_7~prod,value.var = "price")
-row.names(dtm) = dtm$cut2_4_7
+dtm = dcast(P,formula = keams~prod,value.var = "price")
+row.names(dtm) = dtm$keams
 termDocMatrix = as.matrix(dtm[,-1])
 termDocMatrix[is.na(termDocMatrix)] = 0
 d3heatmap(termDocMatrix,colors = "Blues")
@@ -298,7 +339,7 @@ d3heatmap(termDocMatrix,colors = "Blues")
 # 取log後的結果
 termDocMatrix = log(termDocMatrix)
 termDocMatrix[termDocMatrix == -Inf] = 0
-d3heatmap(termDocMatrix,colors = "Greens")
+d3heatmap(termDocMatrix,colors = "Greens",cexRow = 0.7)
 ```
 了解分群顧客有哪些特性
 第2群顧客最近剛消費過
@@ -367,13 +408,13 @@ group_by(A, keams) %>% summarise(
 ```
 
 ```{r}
-mix = merge(Z,A[,c(1,11)],by = "cust")
+mix = merge(Z,A[,c(1,12)],by = "cust")
 mix$weeks = format(mix$date,"%u")
-group_by(mix,cut2_4_7,weeks) %>% 
+group_by(mix,keams,weeks) %>% 
   summarise(count = n()) %>%
-  group_by(cut2_4_7) %>% 
+  group_by(keams) %>% 
   mutate(sum = sum(count),ratio = count/sum) %>% 
-  ggplot(aes(x=as.factor(cut2_4_7),y = ratio,fill = weeks)) + geom_bar(stat = "identity")
+  ggplot(aes(x=as.factor(keams),y = ratio,fill = weeks)) + geom_bar(stat = "identity")
 
 ```
 
@@ -383,7 +424,7 @@ group_by(mix,cut2_4_7,weeks) %>%
 A_often_come = group_by(mix,cust,weeks) %>% 
   summarise(
     count = n(),
-    label = cut2_4_7[1]
+    label = keams[1]
   ) %>% group_by(cust) %>% top_n(1,wt = count)
 
 table(A_often_come$weeks,A_often_come$label) %>% as.data.frame.matrix() %>% d3heatmap::d3heatmap(colors = "Greens")
@@ -400,5 +441,35 @@ X %>% group_by(date) %>% summarise(
 ```{r}
 temp3 = Z %>% group_by(prod) %>% summarise(s = sum(qty))
 arrange(temp3, s)
+```
+
+
+```{r}
+product_z = Z %>% group_by(date,prod,area) %>% 
+  summarise(
+    sum = sum(qty)
+  )
+product_top = product_z %>% group_by(prod) %>% summarise(
+  sum = sum(sum)
+) %>% arrange(desc(sum))
+product_top %>% head(n = 10) %>% ggplot(aes(x = prod,y = sum,fill=prod)) + geom_bar(stat = "identity",alpha = 0.8) +
+  theme(axis.text.x = element_text(angle = 25))
+
+```
+
+```{r}
+product_top3 = product_z %>% filter(prod %in% c("4714981010038","4710421090059","4711271000014")) %>% group_by(date,prod) %>% summarise(
+  sum = sum(sum)
+)
+
+ggplot(product_top3,aes(x = date,y = sum,fill=prod)) + geom_bar(stat = "identity",alpha = 0.8) + labs(y = "Sales", x = "")
+
+
+```
+
+```{r}
+library(reshape2)
+product_top3 %>% mutate(weeks = format(date,"%u")) %>% group_by(prod,weeks) %>% summarise(sum = sum(sum)) %>%
+  acast(formula = prod~weeks,value.var = "sum") %>% d3heatmap::d3heatmap(col="PiYG",Colv = F)
 ```
 
