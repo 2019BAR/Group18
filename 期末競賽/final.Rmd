@@ -473,3 +473,13 @@ product_top3 %>% mutate(weeks = format(date,"%u")) %>% group_by(prod,weeks) %>% 
   acast(formula = prod~weeks,value.var = "sum") %>% d3heatmap::d3heatmap(col="PiYG",Colv = F)
 ```
 
+```{r}
+Z1 = group_by(Z,prod) %>% summarize(
+  pro = sum(qty * (price - cost))
+)
+Z1 = arrange(Z1,desc(pro)) 
+Z1 %>% head(n = 10) %>% ggplot(aes(x = prod,y = pro,fill=prod)) + geom_bar(stat = "identity",alpha = 0.8) +
+  theme(axis.text.x = element_text(angle = 25))
+
+```
+
