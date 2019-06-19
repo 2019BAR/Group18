@@ -267,6 +267,66 @@ hist(B$Buy,main="ProbRetain", ylab="")
 hist(log(B$Rev,10),main="log(PredRevenue)", ylab="")
 ```
 
+### 評估行銷工具的效益
+因為沒有成本資料，我們先假設營業獲利率為0.3
+```{r}
+MRG = 0.3
+```
+
+以`7`為行銷對象
+```{r}
+B = merge(B,A[c(1,11),],by="cust")
+CX = subset(B, cut2_4_7==7)
+P0=CX$Buy
+R0=CX$Rev
+```
+
+
+##### 假設一：固定成本、固定回購機率($k_1$)
+```{r}
+cost = 5
+k1 = 0.75 # fix effect on the probability of retaintion
+```
+
+##### 修正：行銷工具不應該會有負的回購機率效果
+
++ $\Delta P_{ret} = max[0, k_1 - P_{retain}]$
+
+```{r fig.height=2.4, fig.width=7.2}
+par(mar=c(4,3,3,2), cex=0.8)
+PI = R0*MRG*pmax(0, k1 - P0) - cost
+hist(PI, xlim=c(-50, 50), breaks=seq(-500,500,5),main="淨期望報償分布(R2)")
+```
+
+
+#### 初步估計預期報酬
+```{r}
+cost = 5        # 成本
+effect = 0.75    # 效益：下一期的購買機率
+```
+
+```{r}
+Target = subset(B, cut2_4_7==7)
+Target$ExpReturn = (effect - Target$Buy) * Target$Rev - cost
+summary(Target$ExpReturn)
+```
+
+# 雖然欲效益是負的，但是可以調整行銷方案
+# 也可以找出有哪些是正值的客戶
+```{r}
+Target %>% arrange(desc(ExpReturn)) %>% select(cust, ExpReturn) %>% head(15)
+```
+
+```{r}
+sum(Target$ExpReturn > 0)                 # 可實施對象：2195
+```
+
+```{r}
+sum(Target$ExpReturn[Target$ExpReturn > 0])   # 預期報酬：366440.6
+```
+
+
+
 
 ###計算顧客終生價值（CLV）
 ```{r}
@@ -290,7 +350,7 @@ hist(log(B$CLV,10), xlab="", ylab="")
 
 ```{r}
 # 各族群的平均營收貢獻、保留機率、終生價值
-B = merge(B,A[,c(1,12)],by="cust")
+B = merge(B,A[,c(1,11)],by="cust")
 sapply(B[,10:12], tapply, B$keams, mean)
 ```
 
@@ -299,6 +359,9 @@ par(mar=c(3,3,4,2), cex=0.8)
 boxplot(log(CLV)~keams, B, main="CLV by Groups")
 ```
 
+
+
+#### 資料探索區
 
 這些地區可以表示成未來可以加強行銷重點
 ```{r} 
